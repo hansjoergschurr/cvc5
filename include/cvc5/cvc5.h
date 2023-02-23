@@ -21,6 +21,7 @@
 #include <cvc5/cvc5_kind.h>
 #include <cvc5/cvc5_sort_kind.h>
 #include <cvc5/cvc5_types.h>
+#include <cvc5/cvc5_proof_rule.h>
 
 #include <functional>
 #include <map>
@@ -52,14 +53,15 @@ class DType;
 class DTypeConstructor;
 class DTypeSelector;
 class NodeManager;
-class SolverEngine;
-class TypeNode;
 class Options;
+class ProofNode;
 class Random;
 class Rational;
 class Result;
-class SynthResult;
+class SolverEngine;
 class StatisticsRegistry;
+class SynthResult;
+class TypeNode;
 }  // namespace internal
 
 namespace parser {
@@ -70,6 +72,7 @@ class Solver;
 class Statistics;
 struct APIStatistics;
 class Term;
+class Proof;
 
 /* -------------------------------------------------------------------------- */
 /* Exception                                                                  */
@@ -1110,6 +1113,7 @@ class CVC5_EXPORT Term
   friend class Datatype;
   friend class DatatypeConstructor;
   friend class DatatypeSelector;
+  friend class Proof;
   friend class Solver;
   friend class Grammar;
   friend class SynthResult;
@@ -3277,6 +3281,7 @@ class CVC5_EXPORT Solver
   friend class DriverOptions;
   friend class Grammar;
   friend class Op;
+  friend class Proof;
   friend class parser::Command;
   friend class main::CommandExecutor;
   friend class Sort;
@@ -4355,11 +4360,9 @@ class CVC5_EXPORT Solver
    * @warning This method is experimental and may change in future versions.
    *
    * @param c The component of the proof to return
-   * @return A string representing the proof. This takes into account
-   * :ref:`proof-format-mode <lbl-option-proof-format-mode>` when `c` is
-   * `PROOF_COMPONENT_FULL`.
+   * @return A vector of proofs.  The elements in the vector depends on the chosen components.
    */
-  std::string getProof(
+  std::vector<Proof> getProof(
       modes::ProofComponent c = modes::PROOF_COMPONENT_FULL) const;
 
   /**
@@ -5301,6 +5304,68 @@ class CVC5_EXPORT Solver
   std::unique_ptr<internal::SolverEngine> d_slv;
   /** The random number generator of this solver. */
   std::unique_ptr<internal::Random> d_rng;
+};
+
+/* -------------------------------------------------------------------------- */
+/* Proofs                                                                     */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A cvc5 proof.  Proofs are trees and every proof object corresponds to the
+ * root step of a proof.  The branches of the root step are the premises of
+ * the step.
+ */
+class CVC5_EXPORT Proof
+{
+  friend class Solver;
+
+  public:
+    /** 
+     * Constructor for a proof.
+     */
+    // Proof(ProofRule rule, const std::vector<Proof>& children, const std::vector<Term>& args);
+   
+    /*
+     * Destructor.
+     */
+    ~Proof();
+
+    /** @return The proof rule used by the root step of the proof. */
+    ProofRule getRule() const;
+  
+    /** @return The conclusion of the root step of the proof. */
+    Term getResult() const;
+
+    /** @return The premises of the root step of the proof. */
+    const std::vector<Proof> getChildren() const;
+
+    /** 
+     * @return The arguments of the roto step of the proof as a vector of terms.
+     *         Some of those terms might be strings. 
+     */
+    const std::vector<Term> getArguments() const;
+  
+    /**
+     * Prints the proof.  This takes into account
+     * @param commentProves Whether to print the results `T` of the proofs using
+     * the form `(! ... :proves T)`.  Usually only used when not printing an
+     * entire refutation (i.e., a proof of `false`).
+     * :ref:`proof-format-mode <lbl-option-proof-format-mode>`.
+     */ 
+    std::string toString(bool commentProves = false) const;
+
+  private:
+    /** Construct a proof by wrapping a ProofNode. */
+    Proof(const Solver* solver, const std::shared_ptr<internal::ProofNode> p);
+
+    /** @return The internal proof node wrpped by this proof object. */
+    const std::shared_ptr<internal::ProofNode>& getProofNode(void) const;
+
+    /** Wrapped solver object this proof belongs to. */
+    const Solver* d_solver;
+
+    /** The internal proof node wrapped by this proof object. */
+    std::shared_ptr<internal::ProofNode> d_proof_node; 
 };
 
 }  // namespace cvc5

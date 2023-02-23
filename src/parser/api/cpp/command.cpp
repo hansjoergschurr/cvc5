@@ -1518,7 +1518,33 @@ void GetProofCommand::invoke(cvc5::Solver* solver, SymbolManager* sm)
 {
   try
   {
-    d_result = solver->getProof(d_component);
+    stringstream ss;
+    const vector<cvc5::Proof> ps = solver->getProof(d_component);
+
+    // TODO: set correctly
+    bool commentProves = true;
+    // set to false if c= modes::PROOF_COMPONENT_SAT or modes::PROOF_COMPONENT_FULL
+    // this I have
+
+    // mode == options::ProofFormatMode::NONE)
+    // solver-> somethingsomething Option ----> mode Info
+    // how to get this?
+    bool outermostParentheses = false;
+    
+    if (outermostParentheses)
+    {
+      ss << "(\n";
+    }
+    for (cvc5::Proof p : ps)
+    {
+      ss << p.toString(commentProves) << "\n";
+    }
+    if (outermostParentheses)
+    {
+      ss << ")\n";
+    }
+
+    d_result = ss.str();
     d_commandStatus = CommandSuccess::instance();
   }
   catch (cvc5::CVC5ApiRecoverableException& e)

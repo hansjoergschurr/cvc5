@@ -235,7 +235,6 @@ void SolverEngine::shutdown()
 
 SolverEngine::~SolverEngine()
 {
-
   try
   {
     shutdown();
@@ -268,7 +267,8 @@ SolverEngine::~SolverEngine()
   }
   catch (Exception& e)
   {
-    d_env->warning() << "cvc5 threw an exception during cleanup." << std::endl << e << std::endl;
+    d_env->warning() << "cvc5 threw an exception during cleanup." << std::endl
+                     << e << std::endl;
   }
 }
 
@@ -337,9 +337,10 @@ void SolverEngine::setInfo(const std::string& key, const std::string& value)
   {
     if (value != "2" && value != "2.6")
     {
-      d_env->warning() << "SMT-LIB version " << value
-                << " unsupported, defaulting to language (and semantics of) "
-                   "SMT-LIB 2.6\n";
+      d_env->warning()
+          << "SMT-LIB version " << value
+          << " unsupported, defaulting to language (and semantics of) "
+             "SMT-LIB 2.6\n";
     }
     getOptions().writeBase().inputLanguage = Language::LANG_SMTLIB_V2_6;
     // also update the output language
@@ -1040,8 +1041,8 @@ Node SolverEngine::getValue(const Node& t) const
   // holds for models that do not have approximate values.
   if (!m->isValue(resultNode))
   {
-    d_env->warning() << "Could not evaluate " << resultNode
-                     << " in getValue." << std::endl;
+    d_env->warning() << "Could not evaluate " << resultNode << " in getValue."
+                     << std::endl;
   }
 
   if (d_env->getOptions().smt.abstractValues && resultNode.getType().isArray())
@@ -1514,9 +1515,10 @@ void SolverEngine::checkUnsatCore()
                     << std::endl;
   if (r.isUnknown())
   {
-    d_env->warning() << "SolverEngine::checkUnsatCore(): could not check core result "
-                 "unknown."
-              << std::endl;
+    d_env->warning()
+        << "SolverEngine::checkUnsatCore(): could not check core result "
+           "unknown."
+        << std::endl;
   }
   else if (r.getStatus() == Result::SAT)
   {
@@ -1573,19 +1575,87 @@ void SolverEngine::getRelevantQuantTermVectors(
   d_ucManager->getRelevantQuantTermVectors(pfn, insts, sks, getDebugInfo);
 }
 
-std::string SolverEngine::getProof(modes::ProofComponent c)
+std::vector<std::shared_ptr<ProofNode>> SolverEngine::getProof(modes::ProofComponent c)
 {
   Trace("smt") << "SMT getProof()\n";
-  std::vector<std::shared_ptr<ProofNode>> pf = getProofNode(c);
-  std::stringstream out;
-  bool commentProves = true;
-  // don't need to comment that it proves false
-  if (c == modes::PROOF_COMPONENT_FULL || c == modes::PROOF_COMPONENT_SAT)
+  finishInit();
+  if (!d_env->getOptions().smt.produceProofs)
   {
-    commentProves = false;
+    throw ModalException("Cannot get a proof when proof option is off.");
   }
-  proofsToString(out, pf, commentProves);
-  return out.str();
+  // The component modes::PROOF_COMPONENT_PREPROCESS returns the proof of
+  // all preprocessed assertions. It does not require being in an unsat state.
+  if (c != modes::PROOF_COMPONENT_RAW_PREPROCESS
+      && d_state->getMode() != SmtMode::UNSAT)
+  {
+    throw RecoverableModalException(
+        "Cannot get a proof unless immediately preceded by "
+        "UNSAT response.");
+  }
+  // determine if we should get the full proof from the SAT solver
+  PropEngine* pe = d_smtSolver->getPropEngine();
+  Assert(pe != nullptr);
+  std::vector<std::shared_ptr<ProofNode>> ps;
+  bool connectToPreprocess = false;
+  bool connectMkOuterScope = false;
+  options::ProofFormatMode mode = options::ProofFormatMode::NONE;
+  if (c == modes::PROOF_COMPONENT_RAW_PREPROCESS)
+  {
+    // use all preprocessed assertions
+    const std::vector<Node>& assertions =
+        d_smtSolver->getPreprocessedAssertions();
+    connectToPreprocess = true;
+    // We start with (ASSUME a) for each preprocessed assertion a. This
+    // proof will be connected to the proof of preprocessing for a.
+    ProofNodeManager* pnm = d_pfManager->getProofNodeManager();
+    for (const Node& a : assertions)
+    {
+      ps.push_back(pnm->mkAssume(a));
+    }
+  }
+  else if (c == modes::PROOF_COMPONENT_SAT)
+  {
+    ps.push_back(pe->getProof(false));
+  }
+  else if (c == modes::PROOF_COMPONENT_THEORY_LEMMAS
+           || c == modes::PROOF_COMPONENT_PREPROCESS)
+  {
+    ps = pe->getProofLeaves(c);
+    // connect to preprocess proofs for preprocess mode
+    connectToPreprocess = (c == modes::PROOF_COMPONENT_PREPROCESS);
+  }
+  else if (c == modes::PROOF_COMPONENT_FULL)
+  {
+    ps.push_back(pe->getProof(true));
+    connectToPreprocess = true;
+    connectMkOuterScope = true;
+    // we print in the format based on the proof mode
+    mode = options().proof.proofFormatMode;
+  }
+  else
+  {
+    std::stringstream ss;
+    ss << "Unknown proof component " << c << std::endl;
+    throw RecoverableModalException(ss.str());
+  }
+
+  Assert(d_pfManager);
+  // connect proofs to preprocessing, if specified
+  if (connectToPreprocess)
+  {
+    ProofScopeMode scopeMode =
+        connectMkOuterScope ? mode == options::ProofFormatMode::LFSC
+                                  ? ProofScopeMode::DEFINITIONS_AND_ASSERTIONS
+                                  : ProofScopeMode::UNIFIED
+                            : ProofScopeMode::NONE;
+    for (std::shared_ptr<ProofNode>& p : ps)
+    {
+      Assert(p != nullptr);
+      p = d_pfManager->connectProofToAssertions(
+          p, *d_smtSolver.get(), scopeMode);
+    }
+  }
+  return ps;
 }
 
 void SolverEngine::printInstantiations(std::ostream& out)

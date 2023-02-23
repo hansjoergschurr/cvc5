@@ -63,6 +63,7 @@
 #include "options/options_public.h"
 #include "options/quantifiers_options.h"
 #include "options/smt_options.h"
+#include "proof/proof_node.h"
 #include "proof/unsat_core.h"
 #include "smt/env.h"
 #include "smt/model.h"
@@ -2053,7 +2054,7 @@ Op::Op()
 {
 }
 
-  Op::Op(internal::NodeManager* nm, const Kind k)
+Op::Op(internal::NodeManager* nm, const Kind k)
     : d_nm(nm), d_kind(k), d_node(new internal::Node())
 {
 }
@@ -2177,10 +2178,7 @@ size_t Op::getNumIndicesHelper() const
   return size;
 }
 
-Term Op::operator[](size_t index) const
-{
-  return getIndexHelper(index);
-}
+Term Op::operator[](size_t index) const { return getIndexHelper(index); }
 
 Term Op::getIndexHelper(size_t index) const
 {
@@ -3271,7 +3269,9 @@ std::string Term::getFiniteFieldValue() const
       d_node->getKind() == internal::Kind::CONST_FINITE_FIELD, *d_node)
       << "Term to be a finite field value when calling getFiniteFieldValue()";
   //////// all checks before this line
-  return d_node->getConst<internal::FiniteFieldValue>().toSignedInteger().toString();
+  return d_node->getConst<internal::FiniteFieldValue>()
+      .toSignedInteger()
+      .toString();
   ////////
   CVC5_API_TRY_CATCH_END;
 }
@@ -3516,7 +3516,7 @@ std::vector<Term> Term::getSequenceValue() const
   //////// all checks before this line
   std::vector<Term> res;
   const internal::Sequence& seq = d_node->getConst<internal::Sequence>();
-  for (const auto& node: seq.getVec())
+  for (const auto& node : seq.getVec())
   {
     res.emplace_back(Term(d_nm, node));
   }
@@ -4963,9 +4963,7 @@ struct Stat::StatData
 
 Stat::Stat() {}
 Stat::~Stat() {}
-Stat::Stat(const Stat& s)
-    : d_internal(s.d_internal),
-      d_default(s.d_default)
+Stat::Stat(const Stat& s) : d_internal(s.d_internal), d_default(s.d_default)
 {
   if (s.d_data)
   {
@@ -4994,7 +4992,8 @@ bool Stat::isInt() const
 int64_t Stat::getInt() const
 {
   CVC5_API_TRY_CATCH_BEGIN;
-  CVC5_API_RECOVERABLE_CHECK(static_cast<bool>(d_data)) << "Stat holds no value";
+  CVC5_API_RECOVERABLE_CHECK(static_cast<bool>(d_data))
+      << "Stat holds no value";
   CVC5_API_RECOVERABLE_CHECK(isInt()) << "Expected Stat of type int64_t.";
   return std::get<int64_t>(d_data->data);
   CVC5_API_TRY_CATCH_END;
@@ -5007,7 +5006,8 @@ bool Stat::isDouble() const
 double Stat::getDouble() const
 {
   CVC5_API_TRY_CATCH_BEGIN;
-  CVC5_API_RECOVERABLE_CHECK(static_cast<bool>(d_data)) << "Stat holds no value";
+  CVC5_API_RECOVERABLE_CHECK(static_cast<bool>(d_data))
+      << "Stat holds no value";
   CVC5_API_RECOVERABLE_CHECK(isDouble()) << "Expected Stat of type double.";
   return std::get<double>(d_data->data);
   CVC5_API_TRY_CATCH_END;
@@ -5020,7 +5020,8 @@ bool Stat::isString() const
 const std::string& Stat::getString() const
 {
   CVC5_API_TRY_CATCH_BEGIN;
-  CVC5_API_RECOVERABLE_CHECK(static_cast<bool>(d_data)) << "Stat holds no value";
+  CVC5_API_RECOVERABLE_CHECK(static_cast<bool>(d_data))
+      << "Stat holds no value";
   CVC5_API_RECOVERABLE_CHECK(isString())
       << "Expected Stat of type std::string.";
   return std::get<std::string>(d_data->data);
@@ -5034,7 +5035,8 @@ bool Stat::isHistogram() const
 const Stat::HistogramData& Stat::getHistogram() const
 {
   CVC5_API_TRY_CATCH_BEGIN;
-  CVC5_API_RECOVERABLE_CHECK(static_cast<bool>(d_data)) << "Stat holds no value";
+  CVC5_API_RECOVERABLE_CHECK(static_cast<bool>(d_data))
+      << "Stat holds no value";
   CVC5_API_RECOVERABLE_CHECK(isHistogram())
       << "Expected Stat of type histogram.";
   return std::get<HistogramData>(d_data->data);
@@ -5107,7 +5109,10 @@ Statistics::iterator::iterator(Statistics::BaseType::const_iterator it,
                                const Statistics::BaseType& base,
                                bool internal,
                                bool defaulted)
-    : d_it(it), d_base(&base), d_showInternal(internal), d_showDefault(defaulted)
+    : d_it(it),
+      d_base(&base),
+      d_showInternal(internal),
+      d_showDefault(defaulted)
 {
   while (!isVisible())
   {
@@ -5683,7 +5688,8 @@ Sort Solver::mkFiniteFieldSort(const std::string& modulus) const
   CVC5_API_TRY_CATCH_BEGIN;
   //////// all checks before this line
   internal::Integer m(modulus, 10);
-  CVC5_API_ARG_CHECK_EXPECTED(m.isProbablePrime(), modulus) << "modulus is prime";
+  CVC5_API_ARG_CHECK_EXPECTED(m.isProbablePrime(), modulus)
+      << "modulus is prime";
   return Sort(d_nm, d_nm->mkFiniteFieldType(m));
   ////////
   CVC5_API_TRY_CATCH_END;
@@ -6952,8 +6958,13 @@ std::string Solver::getOption(const std::string& option) const
 
 // Supports a visitor from a list of lambdas
 // Taken from https://en.cppreference.com/w/cpp/utility/variant/visit
-template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+template <class... Ts>
+struct overloaded : Ts...
+{
+  using Ts::operator()...;
+};
+template <class... Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
 
 bool OptionInfo::boolValue() const
 {
@@ -7235,14 +7246,21 @@ std::pair<Result, std::vector<Term>> Solver::getTimeoutCore() const
   CVC5_API_TRY_CATCH_END;
 }
 
-std::string Solver::getProof(modes::ProofComponent c) const
+std::vector<Proof> Solver::getProof(modes::ProofComponent c) const
 {
   CVC5_API_TRY_CATCH_BEGIN;
   CVC5_API_CHECK(d_slv->getOptions().smt.produceProofs)
       << "Cannot get proof unless proofs are enabled (try --produce-proofs)";
   CVC5_API_RECOVERABLE_CHECK(d_slv->getSmtMode() == internal::SmtMode::UNSAT)
       << "Cannot get proof unless in unsat mode.";
-  return d_slv->getProof(c);
+  std::vector<std::shared_ptr<internal::ProofNode>> proof_nodes =
+      d_slv->getProof(c);
+  std::vector<Proof> proofs;
+  for (std::shared_ptr<internal::ProofNode> p : proof_nodes)
+  {
+    proofs.push_back(Proof(this, p));
+  }
+  return proofs;
   CVC5_API_TRY_CATCH_END;
 }
 
@@ -8073,6 +8091,83 @@ std::string Solver::getVersion() const
   CVC5_API_TRY_CATCH_BEGIN;
   return internal::Configuration::getVersionString();
   CVC5_API_TRY_CATCH_END;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Proofs                                                                     */
+/* -------------------------------------------------------------------------- */
+
+// Proof::Proof(ProofRule rule, const std::vector<Proof>& children, const
+// std::vector<Term>& args)
+//  : d_nm(internal::NodeManager::currentNM())
+// {
+//   // TODO: build vector of nodes
+//   // Undertand shared_ptr
+//   d_proof_node = new internal::ProofNode(rule,??? , args);
+//}
+
+Proof::Proof(const Solver* solver, const std::shared_ptr<internal::ProofNode> p)
+    : d_solver(solver), d_proof_node(p)
+{
+}
+
+Proof::~Proof()
+{
+  Assert(d_proof_node != nullptr);
+  d_proof_node.reset();
+}
+
+ProofRule Proof::getRule() const
+{
+  return (ProofRule)this->getProofNode()->getRule();
+}
+
+Term Proof::getResult() const
+{
+  return Term(this->d_solver->d_nm, this->getProofNode()->getResult());
+}
+
+const std::vector<Proof> Proof::getChildren() const
+{
+  std::vector<Proof> children;
+  std::vector<std::shared_ptr<internal::ProofNode>> node_children =
+      d_proof_node->getChildren();
+  for (size_t i = 0, psize = node_children.size(); i < psize; i++)
+  {
+    children.push_back(Proof(this->d_solver, node_children[i]));
+  }
+  return children;
+}
+
+const std::vector<Term> Proof::getArguments() const
+{
+  std::vector<Term> args;
+  const std::vector<internal::Node> node_args = d_proof_node->getArguments();
+  for (size_t i = 0, asize = node_args.size(); i < asize; i++)
+  {
+    args.push_back(Term(this->d_solver->getNodeManager(), node_args[i]));
+  }
+  return args;
+}
+
+std::string Proof::toString(bool commentProves) const
+{
+  /* TODO: get the solver engine, print the proof, adapt users for () and (! ...
+   * :proves t) */
+  // print all proofs
+  std::ostringstream ss;
+  if (commentProves)
+  {
+    ss << "(!" << std::endl;
+  }
+  // TODO: we would not have mode on if in not full component mode before?
+  this->d_solver->d_slv->d_pfManager->printProof(ss, this->d_proof_node, internal::options().proof.proofFormatMode);
+  ss << std::endl;
+  if (commentProves)
+  {
+    ss << ":proves " << this->getResult() << ")" << std::endl;
+  }
+  return ss.str();
 }
 
 }  // namespace cvc5
