@@ -232,7 +232,6 @@ void SolverEngine::shutdown()
 
 SolverEngine::~SolverEngine()
 {
-
   try
   {
     shutdown();
@@ -265,7 +264,8 @@ SolverEngine::~SolverEngine()
   }
   catch (Exception& e)
   {
-    d_env->warning() << "cvc5 threw an exception during cleanup." << std::endl << e << std::endl;
+    d_env->warning() << "cvc5 threw an exception during cleanup." << std::endl
+                     << e << std::endl;
   }
 }
 
@@ -334,9 +334,10 @@ void SolverEngine::setInfo(const std::string& key, const std::string& value)
   {
     if (value != "2" && value != "2.6")
     {
-      d_env->warning() << "SMT-LIB version " << value
-                << " unsupported, defaulting to language (and semantics of) "
-                   "SMT-LIB 2.6\n";
+      d_env->warning()
+          << "SMT-LIB version " << value
+          << " unsupported, defaulting to language (and semantics of) "
+             "SMT-LIB 2.6\n";
     }
     getOptions().writeBase().inputLanguage = Language::LANG_SMTLIB_V2_6;
     // also update the output language
@@ -1029,8 +1030,8 @@ Node SolverEngine::getValue(const Node& t) const
   // holds for models that do not have approximate values.
   if (!m->isValue(resultNode))
   {
-    d_env->warning() << "Could not evaluate " << resultNode
-                     << " in getValue." << std::endl;
+    d_env->warning() << "Could not evaluate " << resultNode << " in getValue."
+                     << std::endl;
   }
 
   if (d_env->getOptions().smt.abstractValues && resultNode.getType().isArray())
@@ -1386,9 +1387,10 @@ void SolverEngine::checkUnsatCore()
                     << std::endl;
   if (r.isUnknown())
   {
-    d_env->warning() << "SolverEngine::checkUnsatCore(): could not check core result "
-                 "unknown."
-              << std::endl;
+    d_env->warning()
+        << "SolverEngine::checkUnsatCore(): could not check core result "
+           "unknown."
+        << std::endl;
   }
   else if (r.getStatus() == Result::SAT)
   {
@@ -1445,7 +1447,7 @@ void SolverEngine::getRelevantQuantTermVectors(
   d_ucManager->getRelevantQuantTermVectors(pfn, insts, sks, getDebugInfo);
 }
 
-std::string SolverEngine::getProof(modes::ProofComponent c)
+std::vector<std::shared_ptr<ProofNode>> SolverEngine::getProof(modes::ProofComponent c)
 {
   Trace("smt") << "SMT getProof()\n";
   finishInit();
@@ -1468,7 +1470,6 @@ std::string SolverEngine::getProof(modes::ProofComponent c)
   std::vector<std::shared_ptr<ProofNode>> ps;
   bool connectToPreprocess = false;
   bool connectMkOuterScope = false;
-  bool commentProves = true;
   options::ProofFormatMode mode = options::ProofFormatMode::NONE;
   if (c == modes::PROOF_COMPONENT_RAW_PREPROCESS)
   {
@@ -1487,8 +1488,6 @@ std::string SolverEngine::getProof(modes::ProofComponent c)
   else if (c == modes::PROOF_COMPONENT_SAT)
   {
     ps.push_back(pe->getProof(false));
-    // don't need to comment that it proves false
-    commentProves = false;
   }
   else if (c == modes::PROOF_COMPONENT_THEORY_LEMMAS
            || c == modes::PROOF_COMPONENT_PREPROCESS)
@@ -1502,8 +1501,6 @@ std::string SolverEngine::getProof(modes::ProofComponent c)
     ps.push_back(pe->getProof(true));
     connectToPreprocess = true;
     connectMkOuterScope = true;
-    // don't need to comment that it proves false
-    commentProves = false;
     // we print in the format based on the proof mode
     mode = options().proof.proofFormatMode;
   }
@@ -1515,7 +1512,6 @@ std::string SolverEngine::getProof(modes::ProofComponent c)
   }
 
   Assert(d_pfManager);
-  std::ostringstream ss;
   // connect proofs to preprocessing, if specified
   if (connectToPreprocess)
   {
@@ -1531,30 +1527,7 @@ std::string SolverEngine::getProof(modes::ProofComponent c)
           p, *d_smtSolver.get(), scopeMode);
     }
   }
-  // print all proofs
-  // we currently only print outermost parentheses if the format is NONE
-  if (mode == options::ProofFormatMode::NONE)
-  {
-    ss << "(" << std::endl;
-  }
-  for (std::shared_ptr<ProofNode>& p : ps)
-  {
-    if (commentProves)
-    {
-      ss << "(!" << std::endl;
-    }
-    d_pfManager->printProof(ss, p, mode);
-    ss << std::endl;
-    if (commentProves)
-    {
-      ss << ":proves " << p->getResult() << ")" << std::endl;
-    }
-  }
-  if (mode == options::ProofFormatMode::NONE)
-  {
-    ss << ")" << std::endl;
-  }
-  return ss.str();
+  return ps;
 }
 
 void SolverEngine::printInstantiations(std::ostream& out)

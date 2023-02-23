@@ -28,6 +28,7 @@
 
 #include "context/cdhashmap_forward.h"
 #include "options/options.h"
+#include "proof/proof_node.h"
 #include "smt/smt_mode.h"
 #include "theory/logic_info.h"
 #include "util/result.h"
@@ -683,7 +684,8 @@ class CVC5_EXPORT SolverEngine
    * Only permitted if cvc5 was built with proof support and the proof option
    * is on.
    */
-  std::string getProof(modes::ProofComponent c = modes::PROOF_COMPONENT_FULL);
+  std::vector<std::shared_ptr<ProofNode>> getProof(
+      modes::ProofComponent c = modes::PROOF_COMPONENT_FULL);
 
   /**
    * Get the current set of assertions.  Only permitted if the
