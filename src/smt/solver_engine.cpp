@@ -1575,7 +1575,8 @@ void SolverEngine::getRelevantQuantTermVectors(
   d_ucManager->getRelevantQuantTermVectors(pfn, insts, sks, getDebugInfo);
 }
 
-std::vector<std::shared_ptr<ProofNode>> SolverEngine::getProof(modes::ProofComponent c)
+std::vector<std::shared_ptr<ProofNode>> SolverEngine::getProof(
+    modes::ProofComponent c)
 {
   Trace("smt") << "SMT getProof()\n";
   finishInit();
@@ -1656,6 +1657,14 @@ std::vector<std::shared_ptr<ProofNode>> SolverEngine::getProof(modes::ProofCompo
     }
   }
   return ps;
+}
+
+void SolverEngine::proofToString(std::ostream& out,
+                                 std::shared_ptr<ProofNode> fp)
+{
+  options::ProofFormatMode format_mode =
+      this->getOptions().proof.proofFormatMode;
+  this->getPfManager()->printProof(out, fp, format_mode);
 }
 
 void SolverEngine::printInstantiations(std::ostream& out)
