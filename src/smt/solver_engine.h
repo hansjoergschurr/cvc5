@@ -512,14 +512,6 @@ class CVC5_EXPORT SolverEngine
   void printInstantiations(std::ostream& out);
 
   /**
-   * Print the current proof. This method should be called after an UNSAT
-   * response. It gets the proof of false from the PropEngine and passes
-   * it to the ProofManager, which post-processes the proof and prints it
-   * in the proper format.
-   */
-  void printProof();
-
-  /**
    * Get synth solution.
    *
    * This method returns true if we are in a state immediately preceded by

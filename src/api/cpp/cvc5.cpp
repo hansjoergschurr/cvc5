@@ -7192,6 +7192,7 @@ std::vector<Proof> Solver::getProof(modes::ProofComponent c) const
       << "Cannot get proof unless proofs are enabled (try --produce-proofs)";
   CVC5_API_RECOVERABLE_CHECK(d_slv->getSmtMode() == internal::SmtMode::UNSAT)
       << "Cannot get proof unless in unsat mode.";
+  //////// all checks before this line
   std::vector<std::shared_ptr<internal::ProofNode>> proof_nodes =
       d_slv->getProof(c);
   std::vector<Proof> proofs;
@@ -7200,6 +7201,7 @@ std::vector<Proof> Solver::getProof(modes::ProofComponent c) const
     proofs.push_back(Proof(this, p));
   }
   return proofs;
+  ////////
   CVC5_API_TRY_CATCH_END;
 }
 
@@ -8036,15 +8038,6 @@ std::string Solver::getVersion() const
 /* Proofs                                                                     */
 /* -------------------------------------------------------------------------- */
 
-// Proof::Proof(ProofRule rule, const std::vector<Proof>& children, const
-// std::vector<Term>& args)
-//  : d_nm(internal::NodeManager::currentNM())
-// {
-//   // TODO: build vector of nodes
-//   // Undertand shared_ptr
-//   d_proof_node = new internal::ProofNode(rule,??? , args);
-//}
-
 Proof::Proof(const Solver* solver, const std::shared_ptr<internal::ProofNode> p)
     : d_solver(solver), d_proof_node(p)
 {
@@ -8058,16 +8051,26 @@ Proof::~Proof()
 
 ProofRule Proof::getRule() const
 {
+  CVC5_API_TRY_CATCH_BEGIN;
+  //////// all checks before this line
   return (ProofRule)this->getProofNode()->getRule();
+  ////////
+  CVC5_API_TRY_CATCH_END;
 }
 
 Term Proof::getResult() const
 {
+  CVC5_API_TRY_CATCH_BEGIN;
+  //////// all checks before this line
   return Term(this->d_solver->d_nm, this->getProofNode()->getResult());
+  ////////
+  CVC5_API_TRY_CATCH_END;
 }
 
 const std::vector<Proof> Proof::getChildren() const
 {
+  CVC5_API_TRY_CATCH_BEGIN;
+  //////// all checks before this line
   std::vector<Proof> children;
   std::vector<std::shared_ptr<internal::ProofNode>> node_children =
       d_proof_node->getChildren();
@@ -8076,10 +8079,14 @@ const std::vector<Proof> Proof::getChildren() const
     children.push_back(Proof(this->d_solver, node_children[i]));
   }
   return children;
+  ////////
+  CVC5_API_TRY_CATCH_END;
 }
 
 const std::vector<Term> Proof::getArguments() const
 {
+  CVC5_API_TRY_CATCH_BEGIN;
+  //////// all checks before this line
   std::vector<Term> args;
   const std::vector<internal::Node> node_args = d_proof_node->getArguments();
   for (size_t i = 0, asize = node_args.size(); i < asize; i++)
@@ -8087,16 +8094,15 @@ const std::vector<Term> Proof::getArguments() const
     args.push_back(Term(this->d_solver->getNodeManager(), node_args[i]));
   }
   return args;
+  ////////
+  CVC5_API_TRY_CATCH_END;
 }
 
 std::string Proof::toString(modes::ProofComponent c) const
 {
-  /* TODO: get the solver engine, print the proof, adapt users for () and (! ...
-   * :proves t) */
-  // print all proofs
+  CVC5_API_TRY_CATCH_BEGIN;
+  //////// all checks before this line
   std::ostringstream ss;
-
-  // two things here: proof format mode: alethe etc. proof component!
 
   // don't need to comment that it proves false
   bool commentProves =
@@ -8105,15 +8111,15 @@ std::string Proof::toString(modes::ProofComponent c) const
   {
     ss << "(!" << std::endl;
   }
-  // I guess I could get the format mode here?
-  // TODO: we would not have mode on if in not full component mode before?
-  this->d_solver->d_slv->proofToString(ss, this->d_proof_node);
+  d_solver->d_slv->proofToString(ss, d_proof_node);
   ss << std::endl;
   if (commentProves)
   {
-    ss << ":proves " << this->getResult() << ")" << std::endl;
+    ss << ":proves " << getResult() << ")" << std::endl;
   }
   return ss.str();
+  ////////
+  CVC5_API_TRY_CATCH_END;
 }
 
 }  // namespace cvc5
