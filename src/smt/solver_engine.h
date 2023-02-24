@@ -28,7 +28,6 @@
 
 #include "context/cdhashmap_forward.h"
 #include "options/options.h"
-#include "proof/proof_node.h"
 #include "smt/smt_mode.h"
 #include "theory/logic_info.h"
 #include "util/result.h"
@@ -39,6 +38,8 @@ namespace cvc5 {
 class Solver;
 
 namespace internal {
+
+class ProofNode;  // TODO: deleteme
 
 template <bool ref_count>
 class NodeTemplate;
@@ -509,6 +510,7 @@ class CVC5_EXPORT SolverEngine
    * (list, num, etc.) is determined by printInstMode.
    */
   void printInstantiations(std::ostream& out);
+
   /**
    * Print the current proof. This method should be called after an UNSAT
    * response. It gets the proof of false from the PropEngine and passes
@@ -687,6 +689,9 @@ class CVC5_EXPORT SolverEngine
   std::vector<std::shared_ptr<ProofNode>> getProof(
       modes::ProofComponent c = modes::PROOF_COMPONENT_FULL);
 
+  // TODO: this goes away after proof printing went into ProofNode
+  void proofToString(std::ostream& out, std::shared_ptr<ProofNode> fp);
+
   /**
    * Get the current set of assertions.  Only permitted if the
    * SolverEngine is set to operate interactively.
@@ -833,9 +838,13 @@ class CVC5_EXPORT SolverEngine
    * Get the enviornment from this solver engine.
    */
   Env& getEnv();
+
   /* .......................................................................  */
  private:
   /* .......................................................................  */
+
+  /** Get a pointer to the (new) PfManager owned by this SolverEngine. */
+  smt::PfManager* getPfManager() { return d_pfManager.get(); };
 
   // disallow copy/assignment
   SolverEngine(const SolverEngine&) = delete;
@@ -843,9 +852,6 @@ class CVC5_EXPORT SolverEngine
 
   /** Set solver instance that owns this SolverEngine. */
   void setSolver(cvc5::Solver* solver) { d_solver = solver; }
-
-  /** Get a pointer to the (new) PfManager owned by this SolverEngine. */
-  smt::PfManager* getPfManager() { return d_pfManager.get(); };
 
   /** Get a pointer to the StatisticsRegistry owned by this SolverEngine. */
   StatisticsRegistry& getStatisticsRegistry();
@@ -864,8 +870,8 @@ class CVC5_EXPORT SolverEngine
   void assertFormulaInternal(const Node& formula);
 
   /**
-   * Check that a generated proof checks. This method is the same as printProof,
-   * but does not print the proof. Like that method, it should be called
+   * Check that a generated proof checks. This method is the same as getProof,
+   * but does not return the proof. Like that method, it should be called
    * after an UNSAT response. It ensures that a well-formed proof of false
    * can be constructed by the combination of the PropEngine and ProofManager.
    */

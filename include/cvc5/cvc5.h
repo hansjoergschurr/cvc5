@@ -3069,7 +3069,7 @@ struct CVC5_EXPORT OptionInfo
   /**
    * Obtain the current value as a `double`.
    * @note Asserts that `valueInfo` holds a `double`.
-   * @return The current value as a `double`.
+   * @return The current value as a `double`.;
    */
   double doubleValue() const;
 };
@@ -4061,8 +4061,8 @@ class CVC5_EXPORT Solver
    * @note This corresponds to
    *       mkUninterpretedSort(const std::optional<std::string>&) const
    *       if arity = 0, and to
-   *       mkUninterpretedSortConstructorSort(size_t arity, const std::optional<std::string>&) const
-   *       if arity > 0.
+   *       mkUninterpretedSortConstructorSort(size_t arity, const
+   * std::optional<std::string>&) const if arity > 0.
    *
    * @param symbol The name of the sort.
    * @param arity The arity of the sort.
@@ -4315,7 +4315,8 @@ class CVC5_EXPORT Solver
    * @warning This method is experimental and may change in future versions.
    *
    * @param c The component of the proof to return
-   * @return A vector of proofs.  The elements in the vector depends on the chosen components.
+   * @return A vector of proofs.  The elements in the vector depends on the
+   * chosen components.
    */
   std::vector<Proof> getProof(
       modes::ProofComponent c = modes::PROOF_COMPONENT_FULL) const;
@@ -4379,8 +4380,8 @@ class CVC5_EXPORT Solver
    * for showing the satisfiability of the last call to checkSat using the
    * current model. This method will only return false (for any `v`) if
    * option
-   * \verbatim embed:rst:inline :ref:`model-cores <lbl-option-model-cores>`\endverbatim
-   * has been set.
+   * \verbatim embed:rst:inline :ref:`model-cores
+   * <lbl-option-model-cores>`\endverbatim has been set.
    *
    * @warning This method is experimental and may change in future versions.
    *
@@ -5274,53 +5275,52 @@ class CVC5_EXPORT Proof
 {
   friend class Solver;
 
-  public:
-    /** 
-     * Constructor for a proof.
-     */
-    // Proof(ProofRule rule, const std::vector<Proof>& children, const std::vector<Term>& args);
-   
-    /*
-     * Destructor.
-     */
-    ~Proof();
+ public:
+  /**
+   * Constructor for a proof.
+   */
+  // Proof(ProofRule rule, const std::vector<Proof>& children, const
+  // std::vector<Term>& args);
 
-    /** @return The proof rule used by the root step of the proof. */
-    ProofRule getRule() const;
-  
-    /** @return The conclusion of the root step of the proof. */
-    Term getResult() const;
+  /*
+   * Destructor.
+   */
+  ~Proof();
 
-    /** @return The premises of the root step of the proof. */
-    const std::vector<Proof> getChildren() const;
+  /** @return The proof rule used by the root step of the proof. */
+  ProofRule getRule() const;
 
-    /** 
-     * @return The arguments of the roto step of the proof as a vector of terms.
-     *         Some of those terms might be strings. 
-     */
-    const std::vector<Term> getArguments() const;
-  
-    /**
-     * Prints the proof.  This takes into account
-     * @param commentProves Whether to print the results `T` of the proofs using
-     * the form `(! ... :proves T)`.  Usually only used when not printing an
-     * entire refutation (i.e., a proof of `false`).
-     * :ref:`proof-format-mode <lbl-option-proof-format-mode>`.
-     */ 
-    std::string toString(bool commentProves = false) const;
+  /** @return The conclusion of the root step of the proof. */
+  Term getResult() const;
 
-  private:
-    /** Construct a proof by wrapping a ProofNode. */
-    Proof(const Solver* solver, const std::shared_ptr<internal::ProofNode> p);
+  /** @return The premises of the root step of the proof. */
+  const std::vector<Proof> getChildren() const;
 
-    /** @return The internal proof node wrpped by this proof object. */
-    const std::shared_ptr<internal::ProofNode>& getProofNode(void) const;
+  /**
+   * @return The arguments of the roto step of the proof as a vector of terms.
+   *         Some of those terms might be strings.
+   */
+  const std::vector<Term> getArguments() const;
 
-    /** Wrapped solver object this proof belongs to. */
-    const Solver* d_solver;
+  /**
+   * Prints the proof.  This takes into account
+   * @param c The component of the proof to return
+   */
+  std::string toString(
+      modes::ProofComponent c = modes::PROOF_COMPONENT_FULL) const;
 
-    /** The internal proof node wrapped by this proof object. */
-    std::shared_ptr<internal::ProofNode> d_proof_node; 
+ private:
+  /** Construct a proof by wrapping a ProofNode. */
+  Proof(const Solver* solver, const std::shared_ptr<internal::ProofNode> p);
+
+  /** @return The internal proof node wrpped by this proof object. */
+  const std::shared_ptr<internal::ProofNode>& getProofNode(void) const;
+
+  /** Wrapped solver object this proof belongs to. */
+  const Solver* d_solver;
+
+  /** The internal proof node wrapped by this proof object. */
+  std::shared_ptr<internal::ProofNode> d_proof_node;
 };
 
 }  // namespace cvc5

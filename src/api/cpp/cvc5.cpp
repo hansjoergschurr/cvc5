@@ -61,6 +61,7 @@
 #include "options/option_exception.h"
 #include "options/options.h"
 #include "options/options_public.h"
+#include "options/proof_options.h"
 #include "options/quantifiers_options.h"
 #include "options/smt_options.h"
 #include "proof/proof_node.h"
@@ -8088,18 +8089,25 @@ const std::vector<Term> Proof::getArguments() const
   return args;
 }
 
-std::string Proof::toString(bool commentProves) const
+std::string Proof::toString(modes::ProofComponent c) const
 {
   /* TODO: get the solver engine, print the proof, adapt users for () and (! ...
    * :proves t) */
   // print all proofs
   std::ostringstream ss;
+
+  // two things here: proof format mode: alethe etc. proof component!
+
+  // don't need to comment that it proves false
+  bool commentProves =
+      !(c == modes::PROOF_COMPONENT_SAT || c == modes::PROOF_COMPONENT_FULL);
   if (commentProves)
   {
     ss << "(!" << std::endl;
   }
+  // I guess I could get the format mode here?
   // TODO: we would not have mode on if in not full component mode before?
-  this->d_solver->d_slv->d_pfManager->printProof(ss, this->d_proof_node, internal::options().proof.proofFormatMode);
+  this->d_solver->d_slv->proofToString(ss, this->d_proof_node);
   ss << std::endl;
   if (commentProves)
   {
