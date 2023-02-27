@@ -1,7 +1,6 @@
 /******************************************************************************
  * Top contributors (to current version):
- * TODO: how does this work
- *    ??? 
+ *   Gereon Kremer, Haniel Barbosa, Andrew Reynolds
  *
  * This file is part of the cvc5 project.
  *
