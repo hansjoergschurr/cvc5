@@ -123,7 +123,7 @@ Node eliminateCrowdingLits(bool reorderPremises,
  *
  * This method determines whether a node `res`, corresponding to the result of
  * a resolution inference with premises `children` and arguments `args` (see
- * proof_rule.h for more details on the inference), is a singleton clause
+ * cvc5_proof_rule.h for more details on the inference), is a singleton clause
  * (i.e., a clause with a single literal).
  *
  * It does so relying on the fact that `res` is only a singleton if it occurs

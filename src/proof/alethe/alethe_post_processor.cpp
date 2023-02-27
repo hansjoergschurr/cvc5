@@ -176,7 +176,7 @@ bool AletheProofPostprocessCallback::update(Node res,
     {
       return addAletheStep(AletheRule::ASSUME, res, res, children, {}, *cdp);
     }
-    // See proof_rule.h for documentation on the SCOPE rule. This comment uses
+    // See cvc5_proof_rule.h for documentation on the SCOPE rule. This comment uses
     // variable names as introduced there. Since the SCOPE rule originally
     // concludes
     // (=> (and F1 ... Fn) F) or (not (and F1 ... Fn)) but the ANCHOR rule
@@ -393,7 +393,7 @@ bool AletheProofPostprocessCallback::update(Node res,
                            *cdp);
     }
     // ======== Resolution and N-ary Resolution
-    // See proof_rule.h for documentation on the RESOLUTION and CHAIN_RESOLUTION
+    // See cvc5_proof_rule.h for documentation on the RESOLUTION and CHAIN_RESOLUTION
     // rule. This comment uses variable names as introduced there.
     //
     // Because the RESOLUTION rule is merely a special case of CHAIN_RESOLUTION,
@@ -458,7 +458,7 @@ bool AletheProofPostprocessCallback::update(Node res,
                            *cdp);
     }
     // ======== Factoring
-    // See proof_rule.h for documentation on the FACTORING rule. This comment
+    // See cvc5_proof_rule.h for documentation on the FACTORING rule. This comment
     // uses variable names as introduced there.
     //
     // If C2 = (or F1 ... Fn) but C1 != (or C2 ... C2), then VC2 = (cl F1 ...
@@ -497,7 +497,7 @@ bool AletheProofPostprocessCallback::update(Node res,
           AletheRule::REORDERING, res, children, {}, *cdp);
     }
     // ======== Split
-    // See proof_rule.h for documentation on the SPLIT rule. This comment
+    // See cvc5_proof_rule.h for documentation on the SPLIT rule. This comment
     // uses variable names as introduced there.
     //
     // --------- NOT_NOT      --------- NOT_NOT
@@ -530,7 +530,7 @@ bool AletheProofPostprocessCallback::update(Node res,
                  *cdp);
     }
     // ======== Equality resolution
-    // See proof_rule.h for documentation on the EQ_RESOLVE rule. This
+    // See cvc5_proof_rule.h for documentation on the EQ_RESOLVE rule. This
     // comment uses variable names as introduced there.
     //
     // If F1 = (or G1 ... Gn), then P1 will be printed as (cl G1 ... Gn) but
@@ -638,7 +638,7 @@ bool AletheProofPostprocessCallback::update(Node res,
                            *cdp);
     }
     // ======== Modus ponens
-    // See proof_rule.h for documentation on the MODUS_PONENS rule. This comment
+    // See cvc5_proof_rule.h for documentation on the MODUS_PONENS rule. This comment
     // uses variable names as introduced there.
     //
     //     (P2:(=> F1 F2))
@@ -664,7 +664,7 @@ bool AletheProofPostprocessCallback::update(Node res,
                               *cdp);
     }
     // ======== Double negation elimination
-    // See proof_rule.h for documentation on the NOT_NOT_ELIM rule. This comment
+    // See cvc5_proof_rule.h for documentation on the NOT_NOT_ELIM rule. This comment
     // uses variable names as introduced there.
     //
     // ---------------------------------- NOT_NOT
@@ -688,7 +688,7 @@ bool AletheProofPostprocessCallback::update(Node res,
                               *cdp);
     }
     // ======== Contradiction
-    // See proof_rule.h for documentation on the CONTRA rule. This
+    // See cvc5_proof_rule.h for documentation on the CONTRA rule. This
     // comment uses variable names as introduced there.
     //
     //  P1   P2
@@ -718,7 +718,7 @@ bool AletheProofPostprocessCallback::update(Node res,
                            *cdp);
     }
     // ======== And introduction
-    // See proof_rule.h for documentation on the AND_INTRO rule. This
+    // See cvc5_proof_rule.h for documentation on the AND_INTRO rule. This
     // comment uses variable names as introduced there.
     //
     //
@@ -1268,7 +1268,7 @@ bool AletheProofPostprocessCallback::update(Node res,
                            *cdp);
     }
     // ======== Skolemize
-    // See proof_rule.h for documentation on the SKOLEMIZE rule. This
+    // See cvc5_proof_rule.h for documentation on the SKOLEMIZE rule. This
     // comment uses variable names as introduced there.
     //
     // Either a positive existential or a negative forall is skolemized. First
@@ -1420,7 +1420,7 @@ bool AletheProofPostprocessCallback::update(Node res,
     }
     //================================================= Quantifiers rules
     // ======== Instantiate
-    // See proof_rule.h for documentation on the INSTANTIATE rule. This
+    // See cvc5_proof_rule.h for documentation on the INSTANTIATE rule. This
     // comment uses variable names as introduced there.
     //
     // ----- FORALL_INST, (= x1 t1) ... (= xn tn)
@@ -1564,7 +1564,7 @@ bool AletheProofPostprocessCallback::update(Node res,
                               *cdp);
     }
     // ======== Trichotomy of the reals
-    // See proof_rule.h for documentation on the ARITH_TRICHOTOMY rule. This
+    // See cvc5_proof_rule.h for documentation on the ARITH_TRICHOTOMY rule. This
     // comment uses variable names as introduced there.
     //
     // If C = (= x c) or C = (> x c) pre-processing has to transform (>= x c)
