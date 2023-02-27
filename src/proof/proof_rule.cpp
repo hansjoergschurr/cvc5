@@ -13,7 +13,7 @@
  * Implementation of proof rule.
  */
 
-#include "proof/proof_rule.h"
+#include "api/cpp/cvc5_proof_rule.h"
 
 #include <iostream>
 

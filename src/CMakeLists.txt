@@ -203,7 +203,7 @@ libcvc5_add_sources(
   proof/proof_node_updater.cpp
   proof/proof_node_updater.h
   proof/proof_rule.cpp
-  proof/proof_rule.h
+  api/cpp/cvc5_proof_rule.h
   proof/proof_rule_checker.cpp
   proof/proof_rule_checker.h
   proof/proof_set.h
