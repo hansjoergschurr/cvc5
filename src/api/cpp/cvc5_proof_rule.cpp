@@ -223,15 +223,9 @@ std::ostream& operator<<(std::ostream& out, ProofRule r)
   return out;
 }
 
-}  // namespace cvc5
-
-namespace std {
-
-size_t hash<cvc5::ProofRule>::operator()(cvc5::ProofRule r) const
+size_t ProofRuleHashFunction::operator()(ProofRule id) const
 {
-  return static_cast<size_t>(r);
+  return static_cast<size_t>(id);
 }
 
-}  // namespace std
-
-#endif
+}  // namespace cvc5

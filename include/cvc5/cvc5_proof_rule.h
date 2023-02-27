@@ -2297,21 +2297,13 @@ std::string proofRuleToString(ProofRule r) CVC5_EXPORT;
  */
 std::ostream& operator<<(std::ostream& out, ProofRule r) CVC5_EXPORT;
 
-}  // namespace cvc5
-
-namespace std {
-
 /**
  * Hash function for ProofRules.
  */
-template <>
-struct CVC5_EXPORT hash<cvc5::ProofRule>
+struct ProofRuleHashFunction
 {
-  /**
-   * Hashes a ProofRule to a size_t.
-   */
-  size_t operator()(cvc5::ProofRule r) const;
-};
+  size_t operator()(ProofRule id) const;
+}; /* struct ProofRuleHashFunction */
 
 }  // namespace cvc5
 

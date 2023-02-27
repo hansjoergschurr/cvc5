@@ -28,7 +28,7 @@ ProofNode::ProofNode(ProofRule id,
   setValue(id, children, args);
 }
 
-PfRule ProofNode::getRule() const { return d_rule; }
+ProofRule ProofNode::getRule() const { return d_rule; }
 
 const std::vector<std::shared_ptr<ProofNode>>& ProofNode::getChildren() const
 {
