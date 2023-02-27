@@ -55,7 +55,7 @@ void ProofPostprocessCallback::initializeUpdate(ProofGenerator* pppg)
   d_wfAssumptions.clear();
 }
 
-void ProofPostprocessCallback::setEliminateRule(PfRule rule)
+void ProofPostprocessCallback::setEliminateRule(ProofRule rule)
 {
   d_elimRules.insert(rule);
 }
@@ -64,7 +64,7 @@ bool ProofPostprocessCallback::shouldUpdate(std::shared_ptr<ProofNode> pn,
                                             const std::vector<Node>& fa,
                                             bool& continueUpdate)
 {
-  PfRule id = pn->getRule();
+  ProofRule id = pn->getRule();
   if (d_elimRules.find(id) != d_elimRules.end())
   {
     return true;
@@ -72,7 +72,7 @@ bool ProofPostprocessCallback::shouldUpdate(std::shared_ptr<ProofNode> pn,
   // other than elimination rules, we always update assumptions as long as
   // d_updateScopedAssumptions is true or they are *not* in scope, i.e., not in
   // fa
-  if (id != PfRule::ASSUME
+  if (id != ProofRule::ASSUME
       || (!d_updateScopedAssumptions
           && std::find(fa.begin(), fa.end(), pn->getResult()) != fa.end()))
   {
@@ -84,7 +84,7 @@ bool ProofPostprocessCallback::shouldUpdate(std::shared_ptr<ProofNode> pn,
 }
 
 bool ProofPostprocessCallback::update(Node res,
-                                      PfRule id,
+                                      ProofRule id,
                                       const std::vector<Node>& children,
                                       const std::vector<Node>& args,
                                       CDProof* cdp,
@@ -93,7 +93,7 @@ bool ProofPostprocessCallback::update(Node res,
   Trace("smt-proof-pp-debug") << "- Post process " << id << " " << children
                               << " / " << args << std::endl;
 
-  if (id == PfRule::ASSUME)
+  if (id == ProofRule::ASSUME)
   {
     // we cache based on the assumption node, not the proof node, since there
     // may be multiple occurrences of the same node.
@@ -131,7 +131,7 @@ bool ProofPostprocessCallback::update(Node res,
       }
       d_assumpToProof[f] = pfn;
     }
-    if (pfn == nullptr || pfn->getRule() == PfRule::ASSUME)
+    if (pfn == nullptr || pfn->getRule() == ProofRule::ASSUME)
     {
       Trace("smt-proof-pp-debug") << "...do not add proof" << std::endl;
       // no update
@@ -148,7 +148,7 @@ bool ProofPostprocessCallback::update(Node res,
 }
 
 bool ProofPostprocessCallback::updateInternal(Node res,
-                                              PfRule id,
+                                              ProofRule id,
                                               const std::vector<Node>& children,
                                               const std::vector<Node>& args,
                                               CDProof* cdp)
@@ -157,7 +157,7 @@ bool ProofPostprocessCallback::updateInternal(Node res,
   return update(res, id, children, args, cdp, continueUpdate);
 }
 
-Node ProofPostprocessCallback::expandMacros(PfRule id,
+Node ProofPostprocessCallback::expandMacros(ProofRule id,
                                             const std::vector<Node>& children,
                                             const std::vector<Node>& args,
                                             CDProof* cdp)
@@ -169,7 +169,7 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
   }
   Trace("smt-proof-pp-debug") << "Expand macro " << id << std::endl;
   // macro elimination
-  if (id == PfRule::MACRO_SR_EQ_INTRO)
+  if (id == ProofRule::MACRO_SR_EQ_INTRO)
   {
     // (TRANS
     //   (SUBS <children> :args args[0:1])
@@ -206,10 +206,10 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
       {
         Node eq = t.eqNode(ts);
         // apply SUBS proof rule if necessary
-        if (!updateInternal(eq, PfRule::SUBS, children, sargs, cdp))
+        if (!updateInternal(eq, ProofRule::SUBS, children, sargs, cdp))
         {
           // if we specified that we did not want to eliminate, add as step
-          cdp->addStep(eq, PfRule::SUBS, children, sargs);
+          cdp->addStep(eq, ProofRule::SUBS, children, sargs);
         }
         tchildren.push_back(eq);
       }
@@ -237,23 +237,23 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
     {
       Node eq = ts.eqNode(tr);
       // apply REWRITE proof rule
-      if (!updateInternal(eq, PfRule::REWRITE, {}, rargs, cdp))
+      if (!updateInternal(eq, ProofRule::REWRITE, {}, rargs, cdp))
       {
         // if not elimianted, add as step
-        cdp->addStep(eq, PfRule::REWRITE, {}, rargs);
+        cdp->addStep(eq, ProofRule::REWRITE, {}, rargs);
       }
       tchildren.push_back(eq);
     }
     if (t == tr)
     {
       // typically not necessary, but done to be robust
-      cdp->addStep(t.eqNode(tr), PfRule::REFL, {}, {t});
+      cdp->addStep(t.eqNode(tr), ProofRule::REFL, {}, {t});
       return t.eqNode(tr);
     }
     // must add TRANS if two step
     return addProofForTrans(tchildren, cdp);
   }
-  else if (id == PfRule::MACRO_SR_PRED_INTRO)
+  else if (id == ProofRule::MACRO_SR_PRED_INTRO)
   {
     std::vector<Node> tchildren;
     std::vector<Node> sargs = args;
@@ -272,7 +272,7 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
     // We call the expandMacros method on MACRO_SR_EQ_INTRO, where notice
     // that this rule application is immediately expanded in the recursive
     // call and not added to the proof.
-    Node conc = expandMacros(PfRule::MACRO_SR_EQ_INTRO, children, sargs, cdp);
+    Node conc = expandMacros(ProofRule::MACRO_SR_EQ_INTRO, children, sargs, cdp);
     Trace("smt-proof-pp-debug")
         << "...pred intro conclusion is " << conc << std::endl;
     Assert(!conc.isNull());
@@ -288,7 +288,7 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
         // toWitness(apply_SR(t)) = apply_SR(toWitness(apply_SR(t)))
         // rewrite again, don't need substitution. Also we always use the
         // default rewriter, due to the definition of MACRO_SR_PRED_INTRO.
-        Node weqr = expandMacros(PfRule::MACRO_SR_EQ_INTRO, {}, {weq[1]}, cdp);
+        Node weqr = expandMacros(ProofRule::MACRO_SR_EQ_INTRO, {}, {weq[1]}, cdp);
         addToTransChildren(weqr, tchildren);
       }
     }
@@ -299,10 +299,10 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
     Assert(eq[0] == args[0]);
     Assert(eq[1] == d_true);
 
-    cdp->addStep(eq[0], PfRule::TRUE_ELIM, {eq}, {});
+    cdp->addStep(eq[0], ProofRule::TRUE_ELIM, {eq}, {});
     return eq[0];
   }
-  else if (id == PfRule::MACRO_SR_PRED_ELIM)
+  else if (id == ProofRule::MACRO_SR_PRED_ELIM)
   {
     // (EQ_RESOLVE
     //   children[0]
@@ -311,15 +311,15 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
     std::vector<Node> srargs;
     srargs.push_back(children[0]);
     srargs.insert(srargs.end(), args.begin(), args.end());
-    Node conc = expandMacros(PfRule::MACRO_SR_EQ_INTRO, schildren, srargs, cdp);
+    Node conc = expandMacros(ProofRule::MACRO_SR_EQ_INTRO, schildren, srargs, cdp);
     Assert(!conc.isNull());
     Assert(conc.getKind() == EQUAL);
     Assert(conc[0] == children[0]);
     // apply equality resolve
-    cdp->addStep(conc[1], PfRule::EQ_RESOLVE, {children[0], conc}, {});
+    cdp->addStep(conc[1], ProofRule::EQ_RESOLVE, {children[0], conc}, {});
     return conc[1];
   }
-  else if (id == PfRule::MACRO_SR_PRED_TRANSFORM)
+  else if (id == ProofRule::MACRO_SR_PRED_TRANSFORM)
   {
     // (EQ_RESOLVE
     //   children[0]
@@ -355,7 +355,7 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
       // first rewrite children[0], then args[0]
       sargs[0] = r == 0 ? children[0] : args[0];
       // t = apply_SR(t)
-      Node eq = expandMacros(PfRule::MACRO_SR_EQ_INTRO, schildren, sargs, cdp);
+      Node eq = expandMacros(ProofRule::MACRO_SR_EQ_INTRO, schildren, sargs, cdp);
       Trace("smt-proof-pp-debug")
           << "transform subs_rewrite (" << r << "): " << eq << std::endl;
       Assert(!eq.isNull() && eq.getKind() == EQUAL && eq[0] == sargs[0]);
@@ -372,7 +372,7 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
           // rewrite again, don't need substitution. Also, we always use the
           // default rewriter, due to the definition of MACRO_SR_PRED_TRANSFORM.
           Node weqr =
-              expandMacros(PfRule::MACRO_SR_EQ_INTRO, {}, {weq[1]}, cdp);
+              expandMacros(ProofRule::MACRO_SR_EQ_INTRO, {}, {weq[1]}, cdp);
           Trace("smt-proof-pp-debug") << "transform rewrite_witness (" << r
                                       << "): " << weqr << std::endl;
           addToTransChildren(weqr, tchildrenr);
@@ -405,17 +405,17 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
     // apply transitivity if necessary
     Node eq = addProofForTrans(tchildren, cdp);
 
-    cdp->addStep(eq[1], PfRule::EQ_RESOLVE, {children[0], eq}, {});
+    cdp->addStep(eq[1], ProofRule::EQ_RESOLVE, {children[0], eq}, {});
     return args[0];
   }
-  else if (id == PfRule::MACRO_RESOLUTION
-           || id == PfRule::MACRO_RESOLUTION_TRUST)
+  else if (id == ProofRule::MACRO_RESOLUTION
+           || id == ProofRule::MACRO_RESOLUTION_TRUST)
   {
     ProofNodeManager* pnm = d_env.getProofNodeManager();
     // first generate the naive chain_resolution
     std::vector<Node> chainResArgs{args.begin() + 1, args.end()};
     Node chainConclusion = pnm->getChecker()->checkDebug(
-        PfRule::CHAIN_RESOLUTION, children, chainResArgs, Node::null(), "");
+        ProofRule::CHAIN_RESOLUTION, children, chainResArgs, Node::null(), "");
     Trace("smt-proof-pp-debug") << "Original conclusion: " << args[0] << "\n";
     Trace("smt-proof-pp-debug")
         << "chainRes conclusion: " << chainConclusion << "\n";
@@ -438,7 +438,7 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
       Trace("smt-proof-pp-debug") << "..same conclusion, DONE.\n";
       Trace("crowding-lits") << "..same conclusion, DONE.\n";
       cdp->addStep(
-          chainConclusion, PfRule::CHAIN_RESOLUTION, children, chainResArgs);
+          chainConclusion, ProofRule::CHAIN_RESOLUTION, children, chainResArgs);
       return chainConclusion;
     }
     size_t initProofSize = cdp->getNumProofNodes();
@@ -524,7 +524,7 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
     {
       Trace("smt-proof-pp-debug") << "..add chainRes step directly.\n";
       cdp->addStep(
-          chainConclusion, PfRule::CHAIN_RESOLUTION, children, chainResArgs);
+          chainConclusion, ProofRule::CHAIN_RESOLUTION, children, chainResArgs);
     }
     Trace("smt-proof-pp-debug")
         << "Conclusion after chain_res/elimCrowd: " << chainConclusion << "\n";
@@ -554,7 +554,7 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
                           : factoredLits.size() == 1
                                 ? factoredLits[0]
                                 : nm->mkNode(kind::OR, factoredLits);
-      cdp->addStep(factored, PfRule::FACTORING, {n}, {});
+      cdp->addStep(factored, ProofRule::FACTORING, {n}, {});
       n = factored;
     }
     // either same node or n as a clause
@@ -563,13 +563,13 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
     if (n != args[0])
     {
       Trace("smt-proof-pp-debug") << "..add reordering step.\n";
-      cdp->addStep(args[0], PfRule::REORDERING, {n}, {args[0]});
+      cdp->addStep(args[0], ProofRule::REORDERING, {n}, {args[0]});
     }
     Trace("crowding-lits") << "Number of added proof nodes: "
                            << cdp->getNumProofNodes() - initProofSize << "\n";
     return args[0];
   }
-  else if (id == PfRule::SUBS)
+  else if (id == ProofRule::SUBS)
   {
     NodeManager* nm = NodeManager::currentNM();
     // Notice that a naive way to reconstruct SUBS is to do a term conversion
@@ -619,7 +619,7 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
         {
           Node nodej = nm->mkConstInt(Rational(j));
           cdp->addStep(
-              children[i][j], PfRule::AND_ELIM, {children[i]}, {nodej});
+              children[i][j], ProofRule::AND_ELIM, {children[i]}, {nodej});
         }
       }
     }
@@ -675,7 +675,7 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
           // ensure we have a proof of var = subs
           Node veqs = addProofForSubsStep(var, subs, childFrom, pf.get());
           // transitivity
-          pf->addStep(var.eqNode(ss), PfRule::TRANS, {veqs, seqss}, {});
+          pf->addStep(var.eqNode(ss), ProofRule::TRANS, {veqs, seqss}, {});
           // add to the substitution
           vvec.push_back(var);
           svec.push_back(ss);
@@ -740,12 +740,12 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
             // ensure the proof for the substitution exists
             addProofForSubsStep(var, subs, fromList[ii], cdp);
             // do the single step SUBS on curr with the default arguments
-            cdp->addStep(eqo, PfRule::SUBS, {var.eqNode(subs)}, {curr});
+            cdp->addStep(eqo, ProofRule::SUBS, {var.eqNode(subs)}, {curr});
             curr = next;
           }
         }
         Assert(curr == ts);
-        cdp->addStep(eqq, PfRule::TRANS, transChildren, {});
+        cdp->addStep(eqq, ProofRule::TRANS, transChildren, {});
       }
       else
       {
@@ -754,7 +754,7 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
             << eq << std::endl
             << eqq << std::endl
             << "from " << children << " applied to " << t << std::endl;
-        cdp->addStep(eqq, PfRule::TRUST_SUBS, children, {eqq});
+        cdp->addStep(eqq, ProofRule::TRUST_SUBS, children, {eqq});
       }
     }
     else
@@ -763,7 +763,7 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
     }
     return eqq;
   }
-  else if (id == PfRule::REWRITE)
+  else if (id == ProofRule::REWRITE)
   {
     // get the kind of rewrite
     MethodId idr = MethodId::RW_REWRITE;
@@ -792,12 +792,12 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
           // update to THEORY_REWRITE with idr
           Assert(args.size() >= 1);
           Node tid = builtin::BuiltinProofRuleChecker::mkTheoryIdNode(theoryId);
-          cdp->addStep(eq, PfRule::THEORY_REWRITE, {}, {eq, tid, args[1]});
+          cdp->addStep(eq, ProofRule::THEORY_REWRITE, {}, {eq, tid, args[1]});
         }
         else
         {
           // this should never be applied
-          cdp->addStep(eq, PfRule::TRUST_REWRITE, {}, {eq});
+          cdp->addStep(eq, ProofRule::TRUST_REWRITE, {}, {eq});
         }
       }
       else
@@ -812,7 +812,7 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
     else if (idr == MethodId::RW_EVALUATE)
     {
       // change to evaluate, which is never eliminated
-      cdp->addStep(eq, PfRule::EVALUATE, {}, {args[0]});
+      cdp->addStep(eq, ProofRule::EVALUATE, {}, {args[0]});
     }
     else
     {
@@ -835,7 +835,7 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
           // will expand this as a default rewrite if needed
           Node eqd = retCurr.eqNode(retDef);
           Node mid = mkMethodId(midi);
-          cdp->addStep(eqd, PfRule::REWRITE, {}, {retCurr, mid});
+          cdp->addStep(eqd, ProofRule::REWRITE, {}, {retCurr, mid});
           transEq.push_back(eqd);
         }
         retCurr = retDef;
@@ -857,7 +857,7 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
         // in this case, must be a non-standard rewrite kind
         Assert(args.size() >= 2);
         targs.push_back(args[1]);
-        Node eqpp = expandMacros(PfRule::THEORY_REWRITE, {}, targs, cdp);
+        Node eqpp = expandMacros(ProofRule::THEORY_REWRITE, {}, targs, cdp);
         transEq.push_back(eqp);
         if (eqpp.isNull())
         {
@@ -868,17 +868,17 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
       if (transEq.size() > 1)
       {
         // put together with transitivity
-        cdp->addStep(eq, PfRule::TRANS, transEq, {});
+        cdp->addStep(eq, ProofRule::TRANS, transEq, {});
       }
     }
     if (args[0] == ret)
     {
       // should not be necessary typically
-      cdp->addStep(eq, PfRule::REFL, {}, {args[0]});
+      cdp->addStep(eq, ProofRule::REFL, {}, {args[0]});
     }
     return eq;
   }
-  else if (id == PfRule::THEORY_REWRITE)
+  else if (id == ProofRule::THEORY_REWRITE)
   {
     Assert(!args.empty());
     Node eq = args[0];
@@ -898,7 +898,7 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
     // otherwise no update
     Trace("final-pf-hole") << "hole: " << id << " : " << eq << std::endl;
   }
-  else if (id == PfRule::MACRO_ARITH_SCALE_SUM_UB)
+  else if (id == ProofRule::MACRO_ARITH_SCALE_SUM_UB)
   {
     Trace("macro::arith") << "Expand MACRO_ARITH_SCALE_SUM_UB" << std::endl;
     if (TraceIsOn("macro::arith"))
@@ -924,34 +924,34 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
       Node scalarCmp =
           nm->mkNode(isPos ? GT : LT, scalar, nm->mkConstInt(Rational(0)));
       // (= scalarCmp true)
-      Node scalarCmpOrTrue = steps.tryStep(PfRule::EVALUATE, {}, {scalarCmp});
+      Node scalarCmpOrTrue = steps.tryStep(ProofRule::EVALUATE, {}, {scalarCmp});
       Assert(!scalarCmpOrTrue.isNull());
       // scalarCmp
-      steps.addStep(PfRule::TRUE_ELIM, {scalarCmpOrTrue}, {}, scalarCmp);
+      steps.addStep(ProofRule::TRUE_ELIM, {scalarCmpOrTrue}, {}, scalarCmp);
       // (and scalarCmp relation)
       Node scalarCmpAndRel =
-          steps.tryStep(PfRule::AND_INTRO, {scalarCmp, child}, {});
+          steps.tryStep(ProofRule::AND_INTRO, {scalarCmp, child}, {});
       Assert(!scalarCmpAndRel.isNull());
       // (=> (and scalarCmp relation) scaled)
       Node impl =
-          steps.tryStep(isPos ? PfRule::ARITH_MULT_POS : PfRule::ARITH_MULT_NEG,
+          steps.tryStep(isPos ? ProofRule::ARITH_MULT_POS : PfRule::ARITH_MULT_NEG,
                         {},
                         {scalar, child});
       Assert(!impl.isNull());
       // scaled
       Node scaled =
-          steps.tryStep(PfRule::MODUS_PONENS, {scalarCmpAndRel, impl}, {});
+          steps.tryStep(ProofRule::MODUS_PONENS, {scalarCmpAndRel, impl}, {});
       Assert(!scaled.isNull());
       scaledRels.emplace_back(scaled);
     }
 
-    Node sumBounds = steps.tryStep(PfRule::ARITH_SUM_UB, scaledRels, {});
+    Node sumBounds = steps.tryStep(ProofRule::ARITH_SUM_UB, scaledRels, {});
     cdp->addSteps(steps);
     Trace("macro::arith") << "Expansion done. Proved: " << sumBounds
                           << std::endl;
     return sumBounds;
   }
-  else if (id == PfRule::STRING_INFERENCE)
+  else if (id == ProofRule::STRING_INFERENCE)
   {
     // get the arguments
     Node conc;
@@ -968,7 +968,7 @@ Node ProofPostprocessCallback::expandMacros(PfRule id,
       }
     }
   }
-  else if (id == PfRule::BV_BITBLAST)
+  else if (id == ProofRule::BV_BITBLAST)
   {
     bv::BBProof bb(d_env, nullptr, true);
     Node eq = args[0];
@@ -991,7 +991,7 @@ Node ProofPostprocessCallback::addProofForWitnessForm(Node t, CDProof* cdp)
   if (t == tw)
   {
     // not necessary, add REFL step
-    cdp->addStep(eq, PfRule::REFL, {}, {t});
+    cdp->addStep(eq, ProofRule::REFL, {}, {t});
     return eq;
   }
   std::shared_ptr<ProofNode> pn = d_wfpm.getProofFor(eq);
@@ -1018,7 +1018,7 @@ Node ProofPostprocessCallback::addProofForTrans(
     Node lhs = tchildren[0][0];
     Node rhs = tchildren[tsize - 1][1];
     Node eq = lhs.eqNode(rhs);
-    cdp->addStep(eq, PfRule::TRANS, tchildren, {});
+    cdp->addStep(eq, ProofRule::TRANS, tchildren, {});
     return eq;
   }
   else if (tsize == 1)
@@ -1041,7 +1041,7 @@ Node ProofPostprocessCallback::addProofForSubsStep(Node var,
     Assert(subs.isConst());
     cdp->addStep(
         veqs,
-        subs.getConst<bool>() ? PfRule::TRUE_INTRO : PfRule::FALSE_INTRO,
+        subs.getConst<bool>() ? ProofRule::TRUE_INTRO : PfRule::FALSE_INTRO,
         {assump},
         {});
   }
@@ -1102,7 +1102,7 @@ void ProofPostprocess::process(std::shared_ptr<ProofNode> pf,
   }
 }
 
-void ProofPostprocess::setEliminateRule(PfRule rule)
+void ProofPostprocess::setEliminateRule(ProofRule rule)
 {
   d_cb.setEliminateRule(rule);
 }

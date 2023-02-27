@@ -34,7 +34,7 @@ namespace smt {
 
 ProofFinalCallback::ProofFinalCallback(Env& env)
     : EnvObj(env),
-      d_ruleCount(statisticsRegistry().registerHistogram<PfRule>(
+      d_ruleCount(statisticsRegistry().registerHistogram<ProofRule>(
           "finalProof::ruleCount")),
       d_instRuleIds(statisticsRegistry().registerHistogram<theory::InferenceId>(
           "finalProof::instRuleId")),
@@ -63,7 +63,7 @@ bool ProofFinalCallback::shouldUpdate(std::shared_ptr<ProofNode> pn,
                                       const std::vector<Node>& fa,
                                       bool& continueUpdate)
 {
-  PfRule r = pn->getRule();
+  ProofRule r = pn->getRule();
   ProofNodeManager* pnm = d_env.getProofNodeManager();
   Assert(pnm != nullptr);
   // if not doing eager pedantic checking, fail if below threshold
@@ -91,7 +91,7 @@ bool ProofFinalCallback::shouldUpdate(std::shared_ptr<ProofNode> pn,
   d_ruleCount << r;
   ++d_totalRuleCount;
   // take stats on the instantiations in the proof
-  if (r == PfRule::INSTANTIATE)
+  if (r == ProofRule::INSTANTIATE)
   {
     Node q = pn->getChildren()[0]->getResult();
     const std::vector<Node>& args = pn->getArguments();
@@ -104,7 +104,7 @@ bool ProofFinalCallback::shouldUpdate(std::shared_ptr<ProofNode> pn,
       }
     }
   }
-  else if (r == PfRule::ANNOTATION)
+  else if (r == ProofRule::ANNOTATION)
   {
     // we currently assume the annotation is a single inference id
     const std::vector<Node>& args = pn->getArguments();
@@ -127,7 +127,7 @@ bool ProofFinalCallback::shouldUpdate(std::shared_ptr<ProofNode> pn,
   if (TraceIsOn("final-pf-hole"))
   {
     // currently only track theory rewrites
-    if (r == PfRule::THEORY_REWRITE)
+    if (r == ProofRule::THEORY_REWRITE)
     {
       const std::vector<Node>& args = pn->getArguments();
       Node eq = args[0];
@@ -136,7 +136,7 @@ bool ProofFinalCallback::shouldUpdate(std::shared_ptr<ProofNode> pn,
       Trace("final-pf-hole") << "hole " << r << " " << tid << " : " << eq[0]
                              << " ---> " << eq[1] << std::endl;
     }
-    else if (r == PfRule::REWRITE)
+    else if (r == ProofRule::REWRITE)
     {
       const std::vector<Node>& args = pn->getArguments();
       Node eq = args[0];

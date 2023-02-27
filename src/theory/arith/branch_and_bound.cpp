@@ -117,12 +117,12 @@ std::vector<TrustNode> BranchAndBound::branchIntegerVariable(TNode var,
           literal == rawEq
               ? pfNotLit
               : pnm->mkNode(
-                  PfRule::MACRO_SR_PRED_TRANSFORM,
+                  ProofRule::MACRO_SR_PRED_TRANSFORM,
                   {pfNotLit, teq.getGenerator()->getProofFor(teq.getProven())},
                   {rawEq.negate()});
       Pf pfBot =
-          pnm->mkNode(PfRule::CONTRA,
-                      {pnm->mkNode(PfRule::ARITH_TRICHOTOMY,
+          pnm->mkNode(ProofRule::CONTRA,
+                      {pnm->mkNode(ProofRule::ARITH_TRICHOTOMY,
                                    {pnm->mkAssume(less.negate()), pfNotRawEq},
                                    {greater}),
                        pnm->mkAssume(greater.negate())},
@@ -131,8 +131,8 @@ std::vector<TrustNode> BranchAndBound::branchIntegerVariable(TNode var,
           literal.negate(), less.negate(), greater.negate()};
       // Proof of (not (and (not (= v i)) (not (< v i)) (not (> v i))))
       Pf pfNotAnd = pnm->mkScope(pfBot, assumptions);
-      Pf pfL = pnm->mkNode(PfRule::MACRO_SR_PRED_TRANSFORM,
-                           {pnm->mkNode(PfRule::NOT_AND, {pfNotAnd}, {})},
+      Pf pfL = pnm->mkNode(ProofRule::MACRO_SR_PRED_TRANSFORM,
+                           {pnm->mkNode(ProofRule::NOT_AND, {pfNotAnd}, {})},
                            {l});
       lems.push_back(d_pfGen->mkTrustNode(l, pfL));
     }
@@ -154,7 +154,7 @@ std::vector<TrustNode> BranchAndBound::branchIntegerVariable(TNode var,
     if (proofsEnabled())
     {
       lems.push_back(d_pfGen->mkTrustNode(
-          nm->mkNode(OR, ub, lb), PfRule::SPLIT, {}, {ub}));
+          nm->mkNode(OR, ub, lb), ProofRule::SPLIT, {}, {ub}));
     }
     else
     {

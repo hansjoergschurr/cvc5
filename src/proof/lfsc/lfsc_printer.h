@@ -191,8 +191,8 @@ class LfscPrinter : protected EnvObj
   std::string d_pletPrefix;
   /** proof letified trust child prefix */
   std::string d_pletTrustChildPrefix;
-  /** for debugging the open rules, the set of PfRule we have warned about */
-  std::unordered_set<PfRule, PfRuleHashFunction> d_trustWarned;
+  /** for debugging the open rules, the set of ProofRule we have warned about */
+  std::unordered_set<ProofRule, PfRuleHashFunction> d_trustWarned;
 };
 
 }  // namespace proof

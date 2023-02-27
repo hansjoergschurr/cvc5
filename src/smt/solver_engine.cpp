@@ -1340,7 +1340,7 @@ UnsatCore SolverEngine::getUnsatCoreInternal(bool isInternal)
   pe->getUnsatCore(pcore);
   CDProof cdp(*d_env);
   Node fnode = NodeManager::currentNM()->mkConst(false);
-  cdp.addStep(fnode, PfRule::SAT_REFUTATION, pcore, {});
+  cdp.addStep(fnode, ProofRule::SAT_REFUTATION, pcore, {});
   std::shared_ptr<ProofNode> pepf = cdp.getProofFor(fnode);
 
   Assert(pepf != nullptr);

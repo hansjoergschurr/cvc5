@@ -256,7 +256,7 @@ class CoreSolver : protected EnvObj
    */
   static Node getConclusion(Node x,
                             Node y,
-                            PfRule rule,
+                            ProofRule rule,
                             bool isRev,
                             SkolemCache* skc,
                             std::vector<Node>& newSkolems);

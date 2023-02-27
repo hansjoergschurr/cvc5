@@ -184,7 +184,7 @@ void SineSolver::doPhaseShift(TNode a, TNode new_a)
     {
       // simple to justify
       proof = d_data->getProof();
-      proof->addStep(lem, PfRule::MACRO_SR_PRED_INTRO, {}, {lem});
+      proof->addStep(lem, ProofRule::MACRO_SR_PRED_INTRO, {}, {lem});
     }
     iid = InferenceId::ARITH_NL_T_PURIFY_ARG;
   }
@@ -198,7 +198,7 @@ void SineSolver::doPhaseShift(TNode a, TNode new_a)
     {
       proof = d_data->getProof();
       proof->addStep(
-          lem, PfRule::ARITH_TRANS_SINE_SHIFT, {}, {a[0], new_a[0], shift});
+          lem, ProofRule::ARITH_TRANS_SINE_SHIFT, {}, {a[0], new_a[0], shift});
     }
     iid = InferenceId::ARITH_NL_T_PURIFY_ARG_PHASE_SHIFT;
   }
@@ -237,7 +237,7 @@ void SineSolver::checkInitialRefine()
           if (d_data->isProofEnabled())
           {
             proof = d_data->getProof();
-            proof->addStep(lem, PfRule::ARITH_TRANS_SINE_BOUNDS, {}, {t[0]});
+            proof->addStep(lem, ProofRule::ARITH_TRANS_SINE_BOUNDS, {}, {t[0]});
           }
           d_data->d_im.addPendingLemma(
               lem, InferenceId::ARITH_NL_T_INIT_REFINE, proof);
@@ -259,7 +259,7 @@ void SineSolver::checkInitialRefine()
           {
             proof = d_data->getProof();
             proof->addStep(
-                lem, PfRule::ARITH_TRANS_SINE_TANGENT_ZERO, {}, {t[0]});
+                lem, ProofRule::ARITH_TRANS_SINE_TANGENT_ZERO, {}, {t[0]});
           }
           d_data->d_im.addPendingLemma(
               lem, InferenceId::ARITH_NL_T_INIT_REFINE, proof);
@@ -284,7 +284,7 @@ void SineSolver::checkInitialRefine()
           {
             proof = d_data->getProof();
             proof->addStep(
-                lem, PfRule::ARITH_TRANS_SINE_TANGENT_PI, {}, {t[0]});
+                lem, ProofRule::ARITH_TRANS_SINE_TANGENT_PI, {}, {t[0]});
           }
           d_data->d_im.addPendingLemma(
               lem, InferenceId::ARITH_NL_T_INIT_REFINE, proof);
@@ -522,7 +522,7 @@ void SineSolver::doTangentLemma(
       if (usec)
       {
         proof->addStep(lem,
-                       PfRule::ARITH_TRANS_SINE_APPROX_BELOW_NEG,
+                       ProofRule::ARITH_TRANS_SINE_APPROX_BELOW_NEG,
                        {},
                        {nm->mkConstInt(Rational(2 * d)),
                         e[0],
@@ -533,7 +533,7 @@ void SineSolver::doTangentLemma(
       else
       {
         proof->addStep(lem,
-                       PfRule::ARITH_TRANS_SINE_APPROX_BELOW_NEG,
+                       ProofRule::ARITH_TRANS_SINE_APPROX_BELOW_NEG,
                        {},
                        {nm->mkConstInt(Rational(2 * d)),
                         e[0],
@@ -547,7 +547,7 @@ void SineSolver::doTangentLemma(
       if (usec)
       {
         proof->addStep(lem,
-                       PfRule::ARITH_TRANS_SINE_APPROX_ABOVE_POS,
+                       ProofRule::ARITH_TRANS_SINE_APPROX_ABOVE_POS,
                        {},
                        {nm->mkConstInt(Rational(2 * d)),
                         e[0],
@@ -558,7 +558,7 @@ void SineSolver::doTangentLemma(
       else
       {
         proof->addStep(lem,
-                       PfRule::ARITH_TRANS_SINE_APPROX_ABOVE_POS,
+                       ProofRule::ARITH_TRANS_SINE_APPROX_ABOVE_POS,
                        {},
                        {nm->mkConstInt(Rational(2 * d)),
                         e[0],

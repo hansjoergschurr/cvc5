@@ -36,7 +36,7 @@ void LfscPrintChannelOut::printTypeNode(TypeNode tn)
 }
 
 void LfscPrintChannelOut::printHole() { d_out << " _ "; }
-void LfscPrintChannelOut::printTrust(TNode res, PfRule src)
+void LfscPrintChannelOut::printTrust(TNode res, ProofRule src)
 {
   d_out << std::endl << "(trust ";
   printNodeInternal(d_out, res);
@@ -94,7 +94,7 @@ void LfscPrintChannelOut::printTypeNodeInternal(std::ostream& out, TypeNode tn)
 
 void LfscPrintChannelOut::printRule(std::ostream& out, const ProofNode* pn)
 {
-  if (pn->getRule() == PfRule::LFSC_RULE)
+  if (pn->getRule() == ProofRule::LFSC_RULE)
   {
     const std::vector<Node>& args = pn->getArguments();
     out << getLfscRule(args[0]);
@@ -136,7 +136,7 @@ void LfscPrintChannelOut::cleanSymbols(std::string& s)
 LfscPrintChannelPre::LfscPrintChannelPre(LetBinding& lbind) : d_lbind(lbind) {}
 
 void LfscPrintChannelPre::printNode(TNode n) { d_lbind.process(n); }
-void LfscPrintChannelPre::printTrust(TNode res, PfRule src)
+void LfscPrintChannelPre::printTrust(TNode res, ProofRule src)
 {
   d_lbind.process(res);
 }

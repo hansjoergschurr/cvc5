@@ -108,17 +108,17 @@ void CoveringsProofGenerator::startRecursive() { d_current->openChild(); }
 void CoveringsProofGenerator::endRecursive(size_t intervalId)
 {
   d_current->setCurrent(
-      intervalId, PfRule::ARITH_NL_COVERING_RECURSIVE, {}, {d_false}, d_false);
+      intervalId, ProofRule::ARITH_NL_COVERING_RECURSIVE, {}, {d_false}, d_false);
   d_current->closeChild();
 }
 void CoveringsProofGenerator::startScope()
 {
   d_current->openChild();
-  d_current->getCurrent().d_rule = PfRule::SCOPE;
+  d_current->getCurrent().d_rule = ProofRule::SCOPE;
 }
 void CoveringsProofGenerator::endScope(const std::vector<Node>& args)
 {
-  d_current->setCurrent(0, PfRule::SCOPE, {}, args, d_false);
+  d_current->setCurrent(0, ProofRule::SCOPE, {}, args, d_false);
   d_current->closeChild();
 }
 
@@ -142,7 +142,7 @@ void CoveringsProofGenerator::addDirect(Node var,
     // "Full conflict", constraint excludes (-inf,inf)
     d_current->openChild();
     d_current->setCurrent(intervalId,
-                          PfRule::ARITH_NL_COVERING_DIRECT,
+                          ProofRule::ARITH_NL_COVERING_DIRECT,
                           {constraint},
                           {d_false},
                           d_false);
@@ -183,7 +183,7 @@ void CoveringsProofGenerator::addDirect(Node var,
   startScope();
   d_current->openChild();
   d_current->setCurrent(intervalId,
-                        PfRule::ARITH_NL_COVERING_DIRECT,
+                        ProofRule::ARITH_NL_COVERING_DIRECT,
                         {constraint},
                         {d_false},
                         d_false);

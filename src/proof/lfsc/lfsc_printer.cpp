@@ -207,7 +207,7 @@ void LfscPrinter::print(std::ostream& out, const ProofNode* pn)
   preamble << preambleSymDecl.str();
 
   // [5] print warnings
-  for (PfRule r : d_trustWarned)
+  for (ProofRule r : d_trustWarned)
   {
     out << "; WARNING: adding trust step for " << r << std::endl;
   }
@@ -267,7 +267,7 @@ void LfscPrinter::print(std::ostream& out, const ProofNode* pn)
 
   Trace("lfsc-print-debug") << "; print proof body" << std::endl;
   // [10] print the proof body
-  Assert(pn->getRule() == PfRule::SCOPE);
+  Assert(pn->getRule() == ProofRule::SCOPE);
   // the outermost scope can be ignored (it is the scope of the assertions,
   // which are already printed above).
   LfscPrintChannelOut lout(out);
@@ -501,7 +501,7 @@ void LfscPrinter::printProofInternal(
     // case 1: printing a proof
     if (cur != nullptr)
     {
-      PfRule r = cur->getRule();
+      ProofRule r = cur->getRule();
       // maybe it is letified
       pletIt = pletMap.find(cur);
       if (pletIt != pletMap.end())
@@ -514,13 +514,13 @@ void LfscPrinter::printProofInternal(
       if (pit == processingChildren.end())
       {
         bool isLambda = false;
-        if (r == PfRule::LFSC_RULE)
+        if (r == ProofRule::LFSC_RULE)
         {
           Assert(!cur->getArguments().empty());
           LfscRule lr = getLfscRule(cur->getArguments()[0]);
           isLambda = (lr == LfscRule::LAMBDA);
         }
-        if (r == PfRule::ASSUME)
+        if (r == ProofRule::ASSUME)
         {
           // an assumption, must have a name
           passumeIt = passumeMap.find(cur->getResult());
@@ -653,7 +653,7 @@ bool LfscPrinter::computeProofArgs(const ProofNode* pn,
   {
     cs.push_back(c.get());
   }
-  PfRule r = pn->getRule();
+  ProofRule r = pn->getRule();
   const std::vector<Node>& args = pn->getArguments();
   std::vector<Node> as;
   for (const Node& a : args)
@@ -675,86 +675,86 @@ bool LfscPrinter::computeProofArgs(const ProofNode* pn,
   switch (r)
   {
     // SAT
-    case PfRule::RESOLUTION:
+    case ProofRule::RESOLUTION:
       pf << h << h << h << cs[0] << cs[1] << args[0].getConst<bool>() << as[1];
       break;
-    case PfRule::REORDERING: pf << h << as[0] << cs[0]; break;
-    case PfRule::FACTORING: pf << h << h << cs[0]; break;
+    case ProofRule::REORDERING: pf << h << as[0] << cs[0]; break;
+    case ProofRule::FACTORING: pf << h << h << cs[0]; break;
     // Boolean
-    case PfRule::SPLIT: pf << as[0]; break;
-    case PfRule::NOT_NOT_ELIM: pf << h << cs[0]; break;
-    case PfRule::CONTRA: pf << h << cs[0] << cs[1]; break;
-    case PfRule::MODUS_PONENS:
-    case PfRule::EQ_RESOLVE: pf << h << h << cs[0] << cs[1]; break;
-    case PfRule::NOT_AND: pf << h << h << cs[0]; break;
-    case PfRule::NOT_OR_ELIM:
-    case PfRule::AND_ELIM: pf << h << h << args[0] << cs[0]; break;
-    case PfRule::IMPLIES_ELIM:
-    case PfRule::NOT_IMPLIES_ELIM1:
-    case PfRule::NOT_IMPLIES_ELIM2:
-    case PfRule::EQUIV_ELIM1:
-    case PfRule::EQUIV_ELIM2:
-    case PfRule::NOT_EQUIV_ELIM1:
-    case PfRule::NOT_EQUIV_ELIM2:
-    case PfRule::XOR_ELIM1:
-    case PfRule::XOR_ELIM2:
-    case PfRule::NOT_XOR_ELIM1:
-    case PfRule::NOT_XOR_ELIM2: pf << h << h << cs[0]; break;
-    case PfRule::ITE_ELIM1:
-    case PfRule::ITE_ELIM2:
-    case PfRule::NOT_ITE_ELIM1:
-    case PfRule::NOT_ITE_ELIM2: pf << h << h << h << cs[0]; break;
+    case ProofRule::SPLIT: pf << as[0]; break;
+    case ProofRule::NOT_NOT_ELIM: pf << h << cs[0]; break;
+    case ProofRule::CONTRA: pf << h << cs[0] << cs[1]; break;
+    case ProofRule::MODUS_PONENS:
+    case ProofRule::EQ_RESOLVE: pf << h << h << cs[0] << cs[1]; break;
+    case ProofRule::NOT_AND: pf << h << h << cs[0]; break;
+    case ProofRule::NOT_OR_ELIM:
+    case ProofRule::AND_ELIM: pf << h << h << args[0] << cs[0]; break;
+    case ProofRule::IMPLIES_ELIM:
+    case ProofRule::NOT_IMPLIES_ELIM1:
+    case ProofRule::NOT_IMPLIES_ELIM2:
+    case ProofRule::EQUIV_ELIM1:
+    case ProofRule::EQUIV_ELIM2:
+    case ProofRule::NOT_EQUIV_ELIM1:
+    case ProofRule::NOT_EQUIV_ELIM2:
+    case ProofRule::XOR_ELIM1:
+    case ProofRule::XOR_ELIM2:
+    case ProofRule::NOT_XOR_ELIM1:
+    case ProofRule::NOT_XOR_ELIM2: pf << h << h << cs[0]; break;
+    case ProofRule::ITE_ELIM1:
+    case ProofRule::ITE_ELIM2:
+    case ProofRule::NOT_ITE_ELIM1:
+    case ProofRule::NOT_ITE_ELIM2: pf << h << h << h << cs[0]; break;
     // CNF
-    case PfRule::CNF_AND_POS:
-    case PfRule::CNF_OR_NEG:
+    case ProofRule::CNF_AND_POS:
+    case ProofRule::CNF_OR_NEG:
       // print second argument as a raw integer (mpz)
       pf << h << as[0] << args[1];
       break;
-    case PfRule::CNF_AND_NEG: pf << h << as[0]; break;
-    case PfRule::CNF_OR_POS:
+    case ProofRule::CNF_AND_NEG: pf << h << as[0]; break;
+    case ProofRule::CNF_OR_POS:
       pf << as[0];
       break;
       break;
-    case PfRule::CNF_IMPLIES_POS:
-    case PfRule::CNF_IMPLIES_NEG1:
-    case PfRule::CNF_IMPLIES_NEG2:
-    case PfRule::CNF_EQUIV_POS1:
-    case PfRule::CNF_EQUIV_POS2:
-    case PfRule::CNF_EQUIV_NEG1:
-    case PfRule::CNF_EQUIV_NEG2:
-    case PfRule::CNF_XOR_POS1:
-    case PfRule::CNF_XOR_POS2:
-    case PfRule::CNF_XOR_NEG1:
-    case PfRule::CNF_XOR_NEG2: pf << as[0][0] << as[0][1]; break;
-    case PfRule::CNF_ITE_POS1:
-    case PfRule::CNF_ITE_POS2:
-    case PfRule::CNF_ITE_POS3:
-    case PfRule::CNF_ITE_NEG1:
-    case PfRule::CNF_ITE_NEG2:
-    case PfRule::CNF_ITE_NEG3: pf << as[0][0] << as[0][1] << as[0][2]; break;
+    case ProofRule::CNF_IMPLIES_POS:
+    case ProofRule::CNF_IMPLIES_NEG1:
+    case ProofRule::CNF_IMPLIES_NEG2:
+    case ProofRule::CNF_EQUIV_POS1:
+    case ProofRule::CNF_EQUIV_POS2:
+    case ProofRule::CNF_EQUIV_NEG1:
+    case ProofRule::CNF_EQUIV_NEG2:
+    case ProofRule::CNF_XOR_POS1:
+    case ProofRule::CNF_XOR_POS2:
+    case ProofRule::CNF_XOR_NEG1:
+    case ProofRule::CNF_XOR_NEG2: pf << as[0][0] << as[0][1]; break;
+    case ProofRule::CNF_ITE_POS1:
+    case ProofRule::CNF_ITE_POS2:
+    case ProofRule::CNF_ITE_POS3:
+    case ProofRule::CNF_ITE_NEG1:
+    case ProofRule::CNF_ITE_NEG2:
+    case ProofRule::CNF_ITE_NEG3: pf << as[0][0] << as[0][1] << as[0][2]; break;
     // equality
-    case PfRule::REFL: pf << as[0]; break;
-    case PfRule::SYMM: pf << h << h << cs[0]; break;
-    case PfRule::TRANS: pf << h << h << h << cs[0] << cs[1]; break;
-    case PfRule::TRUE_INTRO:
-    case PfRule::FALSE_INTRO:
-    case PfRule::TRUE_ELIM:
-    case PfRule::FALSE_ELIM: pf << h << cs[0]; break;
+    case ProofRule::REFL: pf << as[0]; break;
+    case ProofRule::SYMM: pf << h << h << cs[0]; break;
+    case ProofRule::TRANS: pf << h << h << h << cs[0] << cs[1]; break;
+    case ProofRule::TRUE_INTRO:
+    case ProofRule::FALSE_INTRO:
+    case ProofRule::TRUE_ELIM:
+    case ProofRule::FALSE_ELIM: pf << h << cs[0]; break;
     // arithmetic
-    case PfRule::ARITH_MULT_POS:
-    case PfRule::ARITH_MULT_NEG:
+    case ProofRule::ARITH_MULT_POS:
+    case ProofRule::ARITH_MULT_NEG:
     {
       pf << h << as[0] << as[1];
     }
     break;
-    case PfRule::ARITH_TRICHOTOMY:
+    case ProofRule::ARITH_TRICHOTOMY:
     {
       // should be robust to different orderings
       pf << h << h << h << cs[0] << cs[1];
     }
     break;
-    case PfRule::INT_TIGHT_UB:
-    case PfRule::INT_TIGHT_LB:
+    case ProofRule::INT_TIGHT_UB:
+    case ProofRule::INT_TIGHT_LB:
     {
       Node res = pn->getResult();
       Assert(res.getNumChildren() == 2);
@@ -763,37 +763,37 @@ bool LfscPrinter::computeProofArgs(const ProofNode* pn,
     }
     break;
     // strings
-    case PfRule::STRING_LENGTH_POS:
+    case ProofRule::STRING_LENGTH_POS:
       pf << as[0] << d_tproc.convertType(as[0].getType()) << h;
       break;
-    case PfRule::STRING_LENGTH_NON_EMPTY: pf << h << h << cs[0]; break;
-    case PfRule::RE_INTER: pf << h << h << h << cs[0] << cs[1]; break;
-    case PfRule::CONCAT_EQ:
+    case ProofRule::STRING_LENGTH_NON_EMPTY: pf << h << h << cs[0]; break;
+    case ProofRule::RE_INTER: pf << h << h << h << cs[0] << cs[1]; break;
+    case ProofRule::CONCAT_EQ:
       pf << h << h << h << args[0].getConst<bool>()
          << d_tproc.convertType(children[0]->getResult()[0].getType()) << cs[0];
       break;
-    case PfRule::CONCAT_UNIFY:
+    case ProofRule::CONCAT_UNIFY:
       pf << h << h << h << h << args[0].getConst<bool>()
          << d_tproc.convertType(children[0]->getResult()[0].getType()) << cs[0]
          << cs[1];
       break;
-    case PfRule::CONCAT_CSPLIT:
+    case ProofRule::CONCAT_CSPLIT:
       pf << h << h << h << h << args[0].getConst<bool>()
          << d_tproc.convertType(children[0]->getResult()[0].getType()) << cs[0]
          << cs[1];
       break;
-    case PfRule::CONCAT_CONFLICT:
+    case ProofRule::CONCAT_CONFLICT:
       pf << h << h << args[0].getConst<bool>()
          << d_tproc.convertType(children[0]->getResult()[0].getType()) << cs[0];
       break;
-    case PfRule::RE_UNFOLD_POS:
+    case ProofRule::RE_UNFOLD_POS:
       if (children[0]->getResult()[1].getKind() != REGEXP_CONCAT)
       {
         return false;
       }
       pf << h << h << h << cs[0];
       break;
-    case PfRule::STRING_EAGER_REDUCTION:
+    case ProofRule::STRING_EAGER_REDUCTION:
     {
       Kind k = as[0].getKind();
       if (k == STRING_TO_CODE || k == STRING_CONTAINS || k == STRING_INDEXOF)
@@ -807,7 +807,7 @@ bool LfscPrinter::computeProofArgs(const ProofNode* pn,
       }
     }
     break;
-    case PfRule::STRING_REDUCTION:
+    case ProofRule::STRING_REDUCTION:
     {
       Kind k = as[0].getKind();
       if (k == STRING_SUBSTR || k == STRING_INDEXOF)
@@ -822,13 +822,13 @@ bool LfscPrinter::computeProofArgs(const ProofNode* pn,
     }
     break;
     // quantifiers
-    case PfRule::SKOLEM_INTRO:
+    case ProofRule::SKOLEM_INTRO:
     {
       pf << d_tproc.convert(SkolemManager::getUnpurifiedForm(args[0]));
     }
     break;
     // ---------- arguments of non-translated rules go here
-    case PfRule::LFSC_RULE:
+    case ProofRule::LFSC_RULE:
     {
       LfscRule lr = getLfscRule(args[0]);
       // lambda should be processed elsewhere
