@@ -706,7 +706,7 @@ Node CoreSolver::getConclusion(Node x,
                            << " " << rule << " " << isRev << std::endl;
   NodeManager* nm = NodeManager::currentNM();
   Node conc;
-  if (rule == ProofRule::CONCAT_SPLIT || rule == PfRule::CONCAT_LPROP)
+  if (rule == ProofRule::CONCAT_SPLIT || rule == ProofRule::CONCAT_LPROP)
   {
     // must compare so that we are agnostic to order of x/y
     Node ux = x < y ? x : y;

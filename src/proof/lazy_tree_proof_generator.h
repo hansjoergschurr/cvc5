@@ -40,7 +40,7 @@ struct TreeProofNode
   /** Storage for some custom object identifier, used for pruning */
   size_t d_objectId;
   /** The proof rule */
-  ProofRule d_rule = PfRule::UNKNOWN;
+  ProofRule d_rule = ProofRule::UNKNOWN;
   /** Assumptions used as premise for this proof step */
   std::vector<Node> d_premise;
   /** Arguments for this proof step */

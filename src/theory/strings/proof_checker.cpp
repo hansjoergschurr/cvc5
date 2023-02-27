@@ -63,9 +63,9 @@ Node StringProofRuleChecker::checkInternal(ProofRule id,
 {
   NodeManager* nm = NodeManager::currentNM();
   // core rules for word equations
-  if (id == ProofRule::CONCAT_EQ || id == PfRule::CONCAT_UNIFY
-      || id == ProofRule::CONCAT_CONFLICT || id == PfRule::CONCAT_SPLIT
-      || id == ProofRule::CONCAT_CSPLIT || id == PfRule::CONCAT_LPROP
+  if (id == ProofRule::CONCAT_EQ || id == ProofRule::CONCAT_UNIFY
+      || id == ProofRule::CONCAT_CONFLICT || id == ProofRule::CONCAT_SPLIT
+      || id == ProofRule::CONCAT_CSPLIT || id == ProofRule::CONCAT_LPROP
       || id == ProofRule::CONCAT_CPROP)
   {
     Trace("strings-pfcheck") << "Checking id " << id << std::endl;
@@ -403,13 +403,13 @@ Node StringProofRuleChecker::checkInternal(ProofRule id,
     Node rei = reis.size() == 1 ? reis[0] : nm->mkNode(REGEXP_INTER, reis);
     return nm->mkNode(STRING_IN_REGEXP, x, rei);
   }
-  else if (id == ProofRule::RE_UNFOLD_POS || id == PfRule::RE_UNFOLD_NEG
+  else if (id == ProofRule::RE_UNFOLD_POS || id == ProofRule::RE_UNFOLD_NEG
            || id == ProofRule::RE_UNFOLD_NEG_CONCAT_FIXED)
   {
     Assert(children.size() == 1);
     Assert(args.empty());
     Node skChild = children[0];
-    if (id == ProofRule::RE_UNFOLD_NEG || id == PfRule::RE_UNFOLD_NEG_CONCAT_FIXED)
+    if (id == ProofRule::RE_UNFOLD_NEG || id == ProofRule::RE_UNFOLD_NEG_CONCAT_FIXED)
     {
       if (skChild.getKind() != NOT || skChild[0].getKind() != STRING_IN_REGEXP)
       {

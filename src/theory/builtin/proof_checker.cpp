@@ -392,14 +392,14 @@ Node BuiltinProofRuleChecker::checkInternal(ProofRule id,
     Assert(args.size() == 1);
     return RemoveTermFormulas::getAxiomFor(args[0]);
   }
-  else if (id == ProofRule::PREPROCESS || id == PfRule::PREPROCESS_LEMMA
+  else if (id == ProofRule::PREPROCESS || id == ProofRule::PREPROCESS_LEMMA
            || id == ProofRule::THEORY_PREPROCESS
            || id == ProofRule::THEORY_PREPROCESS_LEMMA
-           || id == ProofRule::THEORY_EXPAND_DEF || id == PfRule::WITNESS_AXIOM
-           || id == ProofRule::THEORY_LEMMA || id == PfRule::THEORY_REWRITE
+           || id == ProofRule::THEORY_EXPAND_DEF || id == ProofRule::WITNESS_AXIOM
+           || id == ProofRule::THEORY_LEMMA || id == ProofRule::THEORY_REWRITE
            || id == ProofRule::TRUST_FLATTENING_REWRITE
-           || id == ProofRule::TRUST_REWRITE || id == PfRule::TRUST_SUBS
-           || id == ProofRule::TRUST_SUBS_MAP || id == PfRule::TRUST_SUBS_EQ
+           || id == ProofRule::TRUST_REWRITE || id == ProofRule::TRUST_SUBS
+           || id == ProofRule::TRUST_SUBS_MAP || id == ProofRule::TRUST_SUBS_EQ
            || id == ProofRule::THEORY_INFERENCE)
   {
     // "trusted" rules
@@ -407,7 +407,7 @@ Node BuiltinProofRuleChecker::checkInternal(ProofRule id,
     Assert(args[0].getType().isBoolean());
     return args[0];
   }
-  else if (id == ProofRule::LFSC_RULE || id == PfRule::ALETHE_RULE)
+  else if (id == ProofRule::LFSC_RULE || id == ProofRule::ALETHE_RULE)
   {
     Assert(args.size() > 1);
     Assert(args[0].getType().isInteger());

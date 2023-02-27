@@ -125,7 +125,7 @@ void InferProofCons::convert(InferenceId infer, TNode conc, TNode exp, CDProof* 
           // may use symmetry
           Node eq = concAtom.eqNode(nm->mkConst(concPol));
           cdp->addStep(
-              conc, concPol ? ProofRule::TRUE_ELIM : PfRule::FALSE_ELIM, {eq}, {});
+              conc, concPol ? ProofRule::TRUE_ELIM : ProofRule::FALSE_ELIM, {eq}, {});
         }
         success = true;
       }
@@ -194,7 +194,7 @@ void InferProofCons::convert(InferenceId infer, TNode conc, TNode exp, CDProof* 
         if (conc.getKind() != EQUAL)
         {
           ProofRule eid =
-              conc.getKind() == NOT ? ProofRule::FALSE_ELIM : PfRule::TRUE_ELIM;
+              conc.getKind() == NOT ? ProofRule::FALSE_ELIM : ProofRule::TRUE_ELIM;
           cdp->addStep(conc, eid, {concEq}, {});
         }
         success = true;

@@ -158,7 +158,7 @@ class TConvProofGenerator : protected EnvObj, public ProofGenerator
                       Node s,
                       ProofGenerator* pg,
                       bool isPre = false,
-                      ProofRule trustId = PfRule::ASSUME,
+                      ProofRule trustId = ProofRule::ASSUME,
                       bool isClosed = false,
                       uint32_t tctx = 0);
   /** Same as above, for a single step */

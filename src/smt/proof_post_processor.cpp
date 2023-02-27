@@ -934,7 +934,7 @@ Node ProofPostprocessCallback::expandMacros(ProofRule id,
       Assert(!scalarCmpAndRel.isNull());
       // (=> (and scalarCmp relation) scaled)
       Node impl =
-          steps.tryStep(isPos ? ProofRule::ARITH_MULT_POS : PfRule::ARITH_MULT_NEG,
+          steps.tryStep(isPos ? ProofRule::ARITH_MULT_POS : ProofRule::ARITH_MULT_NEG,
                         {},
                         {scalar, child});
       Assert(!impl.isNull());
@@ -1041,7 +1041,7 @@ Node ProofPostprocessCallback::addProofForSubsStep(Node var,
     Assert(subs.isConst());
     cdp->addStep(
         veqs,
-        subs.getConst<bool>() ? ProofRule::TRUE_INTRO : PfRule::FALSE_INTRO,
+        subs.getConst<bool>() ? ProofRule::TRUE_INTRO : ProofRule::FALSE_INTRO,
         {assump},
         {});
   }

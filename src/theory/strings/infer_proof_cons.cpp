@@ -498,7 +498,7 @@ void InferProofCons::convert(InferenceId infer,
           Assert(conc[0].isConst() == t0.isConst());
           Assert(conc[1].isConst() == s0.isConst());
         }
-        ProofRule rule = PfRule::UNKNOWN;
+        ProofRule rule = ProofRule::UNKNOWN;
         // the form of the required length constraint expected by the proof
         Node lenReq;
         bool lenSuccess = false;
@@ -696,7 +696,7 @@ void InferProofCons::convert(InferenceId infer,
         mem = psb.applyPredElim(mem, tcs);
         useBuffer = true;
       }
-      ProofRule r = PfRule::UNKNOWN;
+      ProofRule r = ProofRule::UNKNOWN;
       if (mem.isNull())
       {
         // failed to eliminate above
@@ -757,7 +757,7 @@ void InferProofCons::convert(InferenceId infer,
       std::vector<Node> tiChildren;
       tiChildren.push_back(ps.d_children[0]);
       Node ctnt = psb.tryStep(
-          polarity ? ProofRule::TRUE_INTRO : PfRule::FALSE_INTRO, tiChildren, {});
+          polarity ? ProofRule::TRUE_INTRO : ProofRule::FALSE_INTRO, tiChildren, {});
       if (ctnt.isNull() || ctnt.getKind() != EQUAL)
       {
         break;

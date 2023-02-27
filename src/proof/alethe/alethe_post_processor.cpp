@@ -585,7 +585,7 @@ bool AletheProofPostprocessCallback::update(Node res,
           && children[0].getKind() == kind::OR)
       {
         ProofRule pr = cdp->getProofFor(child1)->getRule();
-        if (pr != ProofRule::ASSUME && pr != PfRule::EQ_RESOLVE)
+        if (pr != ProofRule::ASSUME && pr != ProofRule::EQ_RESOLVE)
         {
           std::vector<Node> clauses{d_cl};
           clauses.insert(clauses.end(),

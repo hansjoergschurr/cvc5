@@ -71,8 +71,8 @@ class PreprocessProofGenerator : protected EnvObj, public ProofGenerator
   PreprocessProofGenerator(Env& env,
                            context::Context* c = nullptr,
                            std::string name = "PreprocessProofGenerator",
-                           ProofRule ra = PfRule::PREPROCESS_LEMMA,
-                           ProofRule rpp = PfRule::PREPROCESS);
+                           ProofRule ra = ProofRule::PREPROCESS_LEMMA,
+                           ProofRule rpp = ProofRule::PREPROCESS);
   ~PreprocessProofGenerator() {}
   /**
    * Notify that n is an input (its proof is ASSUME).

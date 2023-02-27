@@ -84,7 +84,7 @@ class ProofPostprocessCallback : public ProofNodeUpdaterCallback, protected EnvO
   /** The witness form assumptions used in the proof */
   std::vector<Node> d_wfAssumptions;
   /** Kinds of proof rules we are eliminating */
-  std::unordered_set<ProofRule, PfRuleHashFunction> d_elimRules;
+  std::unordered_set<ProofRule, ProofRuleHashFunction> d_elimRules;
   /** Whether we post-process assumptions in scope. */
   bool d_updateScopedAssumptions;
   //---------------------------------reset at the begining of each update

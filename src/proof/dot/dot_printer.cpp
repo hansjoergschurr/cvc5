@@ -452,7 +452,7 @@ inline bool DotPrinter::isSat(const ProofRule& rule)
 
 inline bool DotPrinter::isCNF(const ProofRule& rule)
 {
-  return ProofRule::NOT_NOT_ELIM <= rule && rule <= PfRule::CNF_ITE_NEG3;
+  return ProofRule::NOT_NOT_ELIM <= rule && rule <= ProofRule::CNF_ITE_NEG3;
 }
 
 inline bool DotPrinter::isSCOPE(const ProofRule& rule)
@@ -462,8 +462,8 @@ inline bool DotPrinter::isSCOPE(const ProofRule& rule)
 
 inline bool DotPrinter::isTheoryLemma(const ProofRule& rule)
 {
-  return rule == ProofRule::SCOPE || rule == PfRule::THEORY_LEMMA
-         || (ProofRule::CNF_ITE_NEG3 < rule && rule < PfRule::LFSC_RULE);
+  return rule == ProofRule::SCOPE || rule == ProofRule::THEORY_LEMMA
+         || (ProofRule::CNF_ITE_NEG3 < rule && rule < ProofRule::LFSC_RULE);
 }
 
 inline bool DotPrinter::isASSUME(const ProofRule& rule)
@@ -477,7 +477,7 @@ void DotPrinter::ruleArguments(std::ostringstream& currentArguments,
   const std::vector<Node>& args = pn->getArguments();
   ProofRule r = pn->getRule();
   // don't process arguments of rules whose conclusion is in the arguments
-  if (!args.size() || r == ProofRule::ASSUME || r == PfRule::REORDERING
+  if (!args.size() || r == ProofRule::ASSUME || r == ProofRule::REORDERING
       || r == ProofRule::REFL)
   {
     return;

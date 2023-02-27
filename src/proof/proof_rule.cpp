@@ -219,7 +219,7 @@ std::ostream& operator<<(std::ostream& out, ProofRule id)
   return out;
 }
 
-size_t ProofRuleHashFunction::operator()(PfRule id) const
+size_t ProofRuleHashFunction::operator()(ProofRule id) const
 {
   return static_cast<size_t>(id);
 }

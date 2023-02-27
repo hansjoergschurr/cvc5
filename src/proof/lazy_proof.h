@@ -90,7 +90,7 @@ class LazyCDProof : public CDProof
    */
   void addLazyStep(Node expected,
                    ProofGenerator* pg,
-                   ProofRule trustId = PfRule::ASSUME,
+                   ProofRule trustId = ProofRule::ASSUME,
                    bool isClosed = false,
                    const char* ctx = "LazyCDProof::addLazyStep",
                    bool forceOverwrite = false);

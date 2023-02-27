@@ -53,7 +53,7 @@ bool DifficultyPostprocessCallback::shouldUpdate(std::shared_ptr<ProofNode> pn,
         << "  found assume: " << pn->getResult() << std::endl;
     d_accMap[pn->getResult()] += d_currDifficulty;
   }
-  else if (r == ProofRule::MACRO_SR_EQ_INTRO || r == PfRule::MACRO_SR_PRED_INTRO)
+  else if (r == ProofRule::MACRO_SR_EQ_INTRO || r == ProofRule::MACRO_SR_PRED_INTRO)
   {
     // premise is just a substitution, ignore
     continueUpdate = false;
