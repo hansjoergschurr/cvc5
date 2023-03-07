@@ -93,13 +93,13 @@ class ProofNode
             const std::vector<std::shared_ptr<ProofNode>>& children,
             const std::vector<Node>& args);
   ~ProofNode() {}
-  /** get the rule of this proof node */
+  /** Get the rule of this proof node */
   ProofRule getRule() const;
   /** Get children */
   const std::vector<std::shared_ptr<ProofNode>>& getChildren() const;
   /** Get arguments */
   const std::vector<Node>& getArguments() const;
-  /** get what this node proves, or the null node if this is an invalid proof */
+  /** Get what this node proves, or the null node if this is an invalid proof */
   Node getResult() const;
   /**
    * Returns true if this is a closed proof (i.e. it has no free assumptions).
