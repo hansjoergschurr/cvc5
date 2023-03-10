@@ -1531,12 +1531,57 @@ std::vector<std::shared_ptr<ProofNode>> SolverEngine::getProof(
   return ps;
 }
 
-void SolverEngine::proofToString(std::ostream& out,
-                                 std::shared_ptr<ProofNode> fp)
+void SolverEngine::printProofs(std::ostream& out,
+                              std::vector<std::shared_ptr<ProofNode>> proofs,
+                              modes::ProofFormat format,
+                              bool commentProves
+                              )
 {
-  options::ProofFormatMode format_mode =
-      this->getOptions().proof.proofFormatMode;
-  this->getPfManager()->printProof(out, fp, format_mode);
+  internal::options::ProofFormatMode mode;
+  switch(format)
+  {
+    case modes::PROOF_FORMAT_NONE:
+      mode = options::ProofFormatMode::NONE;
+      break;
+    case modes::PROOF_FORMAT_DOT:
+      mode = options::ProofFormatMode::DOT;
+      break;
+    case modes::PROOF_FORMAT_LFSC:
+      mode = options::ProofFormatMode::LFSC;
+      break;
+    case modes::PROOF_FORMAT_ALETHE:
+      mode = options::ProofFormatMode::ALETHE;
+      break;
+    case modes::PROOF_FORMAT_TPTP:
+      mode = options::ProofFormatMode::TPTP;
+      break;
+    case modes::PROOF_FORMAT_DEFAULT:
+    default:
+      mode = this->getOptions().proof.proofFormatMode;
+      break;
+  }
+
+  if (mode == options::ProofFormatMode::NONE)
+  {
+     out << "(" << std::endl;
+  }
+  for (std::shared_ptr<ProofNode>& proof: proofs)
+  {
+    if (commentProves)
+    {
+      out << "(!" << std::endl;
+    }
+    this->getPfManager()->printProof(out, proof, mode);
+    out << std::endl;
+    if (commentProves)
+    {
+      out << ":proves " << proof->getResult() << ")" << std::endl;
+    }
+  }
+  if (mode == options::ProofFormatMode::NONE)
+  {
+     out << ")" << std::endl;
+  }
 }
 
 void SolverEngine::printInstantiations(std::ostream& out)

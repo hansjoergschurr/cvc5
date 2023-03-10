@@ -1519,29 +1519,9 @@ void GetProofCommand::invoke(cvc5::Solver* solver, SymbolManager* sm)
   try
   {
     stringstream ss;
+    
     const vector<cvc5::Proof> ps = solver->getProof(d_component);
-
-    // TODO: set correctly
-    // set to false if c= modes::PROOF_COMPONENT_SAT or
-    // modes::PROOF_COMPONENT_FULL this I have
-
-    // mode == options::ProofFormatMode::NONE)
-    // solver-> somethingsomething Option ----> mode Info
-    // how to get this?
-    bool outermostParentheses = false;
-
-    if (outermostParentheses)
-    {
-      ss << "(\n";
-    }
-    for (cvc5::Proof p : ps)
-    {
-      ss << p.toString(d_component) << "\n";
-    }
-    if (outermostParentheses)
-    {
-      ss << ")\n";
-    }
+    ss << solver->proofsToString(ps, modes::PROOF_FORMAT_DEFAULT, d_component) << "\n";
 
     d_result = ss.str();
     d_commandStatus = CommandSuccess::instance();

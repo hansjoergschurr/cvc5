@@ -4322,6 +4322,23 @@ class CVC5_EXPORT Solver
       modes::ProofComponent c = modes::PROOF_COMPONENT_FULL) const;
 
   /**
+   * Prints a vector of proofs into a string with a slected proof format mode.
+   * Other aspects of printing are taken from the solver options.
+   *
+   * @warning This method is experimental and may change in future versions.
+   *
+   * @param proof A vector of proofs, usually obtained from Solver::getProof().
+   * @param format The proof format used to print the proof.
+   * @param component The proof component represented by the proof.  If the component is
+   *                  either a SAT proof or a full proof the printed proof is not anotated
+   *                  with the conclusion, because the conclusion is always `false` in this
+   *                  case.
+   * @return The proofs printed in the current format.
+   */
+  std::string proofsToString(std::vector<Proof> proof, modes::ProofFormat format = modes::PROOF_FORMAT_DEFAULT,
+      modes::ProofComponent component = modes::PROOF_COMPONENT_FULL) const;
+
+  /**
    * Get a list of learned literals that are entailed by the current set of
    * assertions.
    *
@@ -5301,13 +5318,6 @@ class CVC5_EXPORT Proof
    *         Some of those terms might be strings.
    */
   const std::vector<Term> getArguments() const;
-
-  /**
-   * Prints the proof.  This takes into account
-   * @param c The component of the proof to return
-   */
-  std::string toString(
-      modes::ProofComponent c = modes::PROOF_COMPONENT_FULL) const;
 
  private:
   /** Construct a proof by wrapping a ProofNode. */

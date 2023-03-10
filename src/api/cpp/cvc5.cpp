@@ -7205,6 +7205,36 @@ std::vector<Proof> Solver::getProof(modes::ProofComponent c) const
   CVC5_API_TRY_CATCH_END;
 }
 
+/** Return true if given proof format is a defined proof format. */
+bool isProofFormat(modes::ProofFormat pf) { return pf >= 0 && pf <= modes::PROOF_FORMAT_DEFAULT; }
+/** Return true if given proof component is a defined proof component. */
+bool isProofComponent(modes::ProofComponent pc) { return pc >= 0 && pc <= modes::PROOF_COMPONENT_FULL; }
+
+std::string Solver::proofsToString(std::vector<Proof> proofs, modes::ProofFormat format,
+      modes::ProofComponent component) const
+{
+  CVC5_API_TRY_CATCH_BEGIN;
+  CVC5_API_CHECK(isProofFormat(format)) << "Invalid proof format.";
+  CVC5_API_CHECK(isProofComponent(component)) << "Invalid proof component.";
+  //////// all checks before this line
+  std::ostringstream ss;
+
+  // don't need to comment that it proves false
+  bool commentProves =
+      !(component == modes::PROOF_COMPONENT_SAT || component == modes::PROOF_COMPONENT_FULL);
+
+  std::vector<std::shared_ptr<internal::ProofNode>> proof_nodes;
+  for (Proof p : proofs)
+  {
+    proof_nodes.push_back(p.getProofNode());
+  }
+  this->d_slv->printProofs(ss, proof_nodes, format, commentProves);
+
+  return ss.str();
+  ////////
+  CVC5_API_TRY_CATCH_END;
+}
+
 std::vector<Term> Solver::getLearnedLiterals(modes::LearnedLitType t) const
 {
   CVC5_API_TRY_CATCH_BEGIN;
@@ -8094,30 +8124,6 @@ const std::vector<Term> Proof::getArguments() const
     args.push_back(Term(d_nm, node_args[i]));
   }
   return args;
-  ////////
-  CVC5_API_TRY_CATCH_END;
-}
-
-std::string Proof::toString(modes::ProofComponent c) const
-{
-  CVC5_API_TRY_CATCH_BEGIN;
-  //////// all checks before this line
-  std::ostringstream ss;
-
-  // don't need to comment that it proves false
-  bool commentProves =
-      !(c == modes::PROOF_COMPONENT_SAT || c == modes::PROOF_COMPONENT_FULL);
-  if (commentProves)
-  {
-    ss << "(!" << std::endl;
-  }
-  d_solver->d_slv->proofToString(ss, d_proof_node);
-  ss << std::endl;
-  if (commentProves)
-  {
-    ss << ":proves " << getResult() << ")" << std::endl;
-  }
-  return ss.str();
   ////////
   CVC5_API_TRY_CATCH_END;
 }

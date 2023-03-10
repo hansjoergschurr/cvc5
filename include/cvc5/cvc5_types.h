@@ -252,6 +252,27 @@ enum ProofComponent
 };
 /** Writes a proof component identifier to a stream. */
 std::ostream& operator<<(std::ostream& out, ProofComponent pc) CVC5_EXPORT;
-}  // namespace cvc5::modes
+
+/**
+ * Proof format used for proof printing.
+ */
+enum ProofFormat
+{
+  /** Do not translate proof output. */
+  PROOF_FORMAT_NONE,
+  /** Output DOT proof. */
+  PROOF_FORMAT_DOT,
+  /** Output LFSC proof. */
+  PROOF_FORMAT_LFSC,
+  /** Output Alethe proof. */
+  PROOF_FORMAT_ALETHE,
+  /** Output TPTP proof (work in progress). */
+  PROOF_FORMAT_TPTP,
+  /** Use the proof format mode set in the solver options. */
+  PROOF_FORMAT_DEFAULT
+};
+/** Writes a proof format identifier to a stream. */
+std::ostream& operator<<(std::ostream& out, ProofFormat pf) CVC5_EXPORT;
+}
 
 #endif

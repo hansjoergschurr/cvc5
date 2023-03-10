@@ -79,19 +79,16 @@ std::ostream& operator<<(std::ostream& out, LearnedLitType ltype)
   }
   return out;
 }
-std::ostream& operator<<(std::ostream& out, ProofComponent pc)
+std::ostream& operator<<(std::ostream& out, ProofFormat pf)
 {
-  switch (pc)
+  switch (pf)
   {
-    case ProofComponent::PROOF_COMPONENT_RAW_PREPROCESS:
-      out << "raw_preprocess";
-      break;
-    case ProofComponent::PROOF_COMPONENT_PREPROCESS: out << "preprocess"; break;
-    case ProofComponent::PROOF_COMPONENT_SAT: out << "sat"; break;
-    case ProofComponent::PROOF_COMPONENT_THEORY_LEMMAS:
-      out << "theory_lemmas";
-      break;
-    case ProofComponent::PROOF_COMPONENT_FULL: out << "full"; break;
+    case ProofFormat::PROOF_FORMAT_NONE: out << "none"; break;
+    case ProofFormat::PROOF_FORMAT_DOT: out << "dot"; break;
+    case ProofFormat::PROOF_FORMAT_LFSC: out << "lfsc"; break;
+    case ProofFormat::PROOF_FORMAT_ALETHE: out << "alethe"; break;
+    case ProofFormat::PROOF_FORMAT_TPTP: out << "tptp"; break;
+    case ProofFormat::PROOF_FORMAT_DEFAULT: out << "default"; break;
     default: out << "?";
   }
   return out;

@@ -503,6 +503,23 @@ class CVC5_EXPORT SolverEngine
   std::string getModel(const std::vector<TypeNode>& declaredSorts,
                        const std::vector<Node>& declaredFuns);
 
+  /**
+   * Prints a vector of proofs node to a stream.
+   *
+   * @param out The stream to print to
+   * @param proof The proof to print
+   * @param format The proof format to use for printing.
+   * @param commentProves Wether to print the proof in the form `(! PROOF :proves RESULT)`.
+   *                      This is usually omitted if `RESULT` is `false`. 
+   * @return the string corresponding to the model. If the output language is
+   * smt2, then this corresponds to a response to the get-model command.
+   */
+  void printProofs(std::ostream& out,
+                  std::vector<std::shared_ptr<ProofNode>> proofs,
+                  modes::ProofFormat format = modes::PROOF_FORMAT_DEFAULT,
+                  bool commentProves = true
+                  );
+                     
   /** print instantiations
    *
    * Print all instantiations for all quantified formulas on out,
