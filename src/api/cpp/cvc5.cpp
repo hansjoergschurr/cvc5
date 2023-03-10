@@ -7198,7 +7198,7 @@ std::vector<Proof> Solver::getProof(modes::ProofComponent c) const
   std::vector<Proof> proofs;
   for (std::shared_ptr<internal::ProofNode> p : proof_nodes)
   {
-    proofs.push_back(Proof(this, p));
+    proofs.push_back(Proof(p));
   }
   return proofs;
   ////////
@@ -8038,8 +8038,8 @@ std::string Solver::getVersion() const
 /* Proofs                                                                     */
 /* -------------------------------------------------------------------------- */
 
-Proof::Proof(const Solver* solver, const std::shared_ptr<internal::ProofNode> p)
-    : d_solver(solver), d_proof_node(p)
+Proof::Proof(const std::shared_ptr<internal::ProofNode> p)
+    : d_nm(internal::NodeManager::currentNM()), d_proof_node(p)
 {
 }
 
@@ -8062,7 +8062,7 @@ Term Proof::getResult() const
 {
   CVC5_API_TRY_CATCH_BEGIN;
   //////// all checks before this line
-  return Term(this->d_solver->d_nm, this->getProofNode()->getResult());
+  return Term(d_nm, this->getProofNode()->getResult());
   ////////
   CVC5_API_TRY_CATCH_END;
 }
@@ -8076,7 +8076,7 @@ const std::vector<Proof> Proof::getChildren() const
       d_proof_node->getChildren();
   for (size_t i = 0, psize = node_children.size(); i < psize; i++)
   {
-    children.push_back(Proof(this->d_solver, node_children[i]));
+    children.push_back(Proof(node_children[i]));
   }
   return children;
   ////////
@@ -8091,7 +8091,7 @@ const std::vector<Term> Proof::getArguments() const
   const std::vector<internal::Node> node_args = d_proof_node->getArguments();
   for (size_t i = 0, asize = node_args.size(); i < asize; i++)
   {
-    args.push_back(Term(this->d_solver->getNodeManager(), node_args[i]));
+    args.push_back(Term(d_nm, node_args[i]));
   }
   return args;
   ////////

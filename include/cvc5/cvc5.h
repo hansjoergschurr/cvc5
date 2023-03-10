@@ -5311,13 +5311,13 @@ class CVC5_EXPORT Proof
 
  private:
   /** Construct a proof by wrapping a ProofNode. */
-  Proof(const Solver* solver, const std::shared_ptr<internal::ProofNode> p);
+  Proof(const std::shared_ptr<internal::ProofNode> p);
 
   /** @return The internal proof node wrpped by this proof object. */
   const std::shared_ptr<internal::ProofNode>& getProofNode(void) const;
 
   /** Wrapped solver object this proof belongs to. */
-  const Solver* d_solver;
+  internal::NodeManager* d_nm;
 
   /** The internal proof node wrapped by this proof object. */
   std::shared_ptr<internal::ProofNode> d_proof_node;
