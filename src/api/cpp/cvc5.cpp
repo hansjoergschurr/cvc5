@@ -8113,6 +8113,10 @@ const std::vector<Proof> Proof::getChildren() const
   CVC5_API_TRY_CATCH_END;
 }
 
+const std::shared_ptr<internal::ProofNode>& Proof::getProofNode(void) const {
+  return this->d_proof_node;
+}
+
 const std::vector<Term> Proof::getArguments() const
 {
   CVC5_API_TRY_CATCH_BEGIN;
