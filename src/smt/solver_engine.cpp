@@ -15,6 +15,8 @@
 
 #include "smt/solver_engine.h"
 
+#include <memory>
+
 #include "base/check.h"
 #include "base/exception.h"
 #include "base/modal_exception.h"
@@ -1238,6 +1240,122 @@ void SolverEngine::ensureWellFormedTerms(const std::vector<Node>& ns,
   }
 }
 
+std::vector<std::shared_ptr<ProofNode>> SolverEngine::getProofNode(
+    modes::ProofComponent c)
+{
+  finishInit();
+  if (!d_env->getOptions().smt.produceProofs)
+  {
+    throw ModalException("Cannot get a proof when proof option is off.");
+  }
+  // The component modes::PROOF_COMPONENT_PREPROCESS returns the proof of
+  // all preprocessed assertions. It does not require being in an unsat state.
+  if (c != modes::PROOF_COMPONENT_RAW_PREPROCESS
+      && d_state->getMode() != SmtMode::UNSAT)
+  {
+    throw RecoverableModalException(
+        "Cannot get a proof unless immediately preceded by "
+        "UNSAT response.");
+  }
+  // determine if we should get the full proof from the SAT solver
+  PropEngine* pe = d_smtSolver->getPropEngine();
+  Assert(pe != nullptr);
+  std::vector<std::shared_ptr<ProofNode>> ps;
+  bool connectToPreprocess = false;
+  bool connectMkOuterScope = false;
+  if (c == modes::PROOF_COMPONENT_RAW_PREPROCESS)
+  {
+    // use all preprocessed assertions
+    const std::vector<Node>& assertions =
+        d_smtSolver->getPreprocessedAssertions();
+    connectToPreprocess = true;
+    // We start with (ASSUME a) for each preprocessed assertion a. This
+    // proof will be connected to the proof of preprocessing for a.
+    ProofNodeManager* pnm = d_pfManager->getProofNodeManager();
+    for (const Node& a : assertions)
+    {
+      ps.push_back(pnm->mkAssume(a));
+    }
+  }
+  else if (c == modes::PROOF_COMPONENT_SAT)
+  {
+    ps.push_back(pe->getProof(false));
+  }
+  else if (c == modes::PROOF_COMPONENT_THEORY_LEMMAS
+           || c == modes::PROOF_COMPONENT_PREPROCESS)
+  {
+    ps = pe->getProofLeaves(c);
+    // connect to preprocess proofs for preprocess mode
+    connectToPreprocess = (c == modes::PROOF_COMPONENT_PREPROCESS);
+  }
+  else if (c == modes::PROOF_COMPONENT_FULL)
+  {
+    ps.push_back(pe->getProof(true));
+    connectToPreprocess = true;
+    connectMkOuterScope = true;
+  }
+  else
+  {
+    std::stringstream ss;
+    ss << "Unknown proof component " << c << std::endl;
+    throw RecoverableModalException(ss.str());
+  }
+
+  Assert(d_pfManager);
+  // connect proofs to preprocessing, if specified
+  if (connectToPreprocess)
+  {
+    ProofScopeMode scopeMode;
+    if (connectMkOuterScope)
+    {
+      scopeMode = ProofScopeMode::DEFINITIONS_AND_ASSERTIONS;
+    }
+    else
+    {
+      scopeMode = ProofScopeMode::NONE;
+    }
+    for (std::shared_ptr<ProofNode>& p : ps)
+    {
+      Assert(p != nullptr);
+      p = d_pfManager->connectProofToAssertions(
+          p, *d_smtSolver.get(), scopeMode);
+    }
+  }
+  return ps;
+}
+
+void SolverEngine::proofsToString(std::ostream& out,
+                                  std::vector<std::shared_ptr<ProofNode>> fp,
+                                  bool commentProves)
+{
+  // print all proofs
+  // we currently only print outermost parentheses if the format is NONE
+
+  // we print in the format based on the proof mode
+  options::ProofFormatMode mode = options().proof.proofFormatMode;
+  if (mode == options::ProofFormatMode::NONE)
+  {
+    out << "(" << std::endl;
+  }
+  for (std::shared_ptr<ProofNode>& p : fp)
+  {
+    if (commentProves)
+    {
+      out << "(!" << std::endl;
+    }
+    d_pfManager->printProof(out, p, mode);
+    out << std::endl;
+    if (commentProves)
+    {
+      out << ":proves " << p->getResult() << ")" << std::endl;
+    }
+  }
+  if (mode == options::ProofFormatMode::NONE)
+  {
+    out << ")" << std::endl;
+  }
+}
+
 std::vector<Node> SolverEngine::getSubstitutedAssertions()
 {
   std::vector<Node> easserts = getAssertions();
@@ -1457,111 +1575,16 @@ void SolverEngine::getRelevantQuantTermVectors(
 std::string SolverEngine::getProof(modes::ProofComponent c)
 {
   Trace("smt") << "SMT getProof()\n";
-  finishInit();
-  if (!d_env->getOptions().smt.produceProofs)
-  {
-    throw ModalException("Cannot get a proof when proof option is off.");
-  }
-  // The component modes::PROOF_COMPONENT_PREPROCESS returns the proof of
-  // all preprocessed assertions. It does not require being in an unsat state.
-  if (c != modes::PROOF_COMPONENT_RAW_PREPROCESS
-      && d_state->getMode() != SmtMode::UNSAT)
-  {
-    throw RecoverableModalException(
-        "Cannot get a proof unless immediately preceded by "
-        "UNSAT response.");
-  }
-  // determine if we should get the full proof from the SAT solver
-  PropEngine* pe = d_smtSolver->getPropEngine();
-  Assert(pe != nullptr);
-  std::vector<std::shared_ptr<ProofNode>> ps;
-  bool connectToPreprocess = false;
-  bool connectMkOuterScope = false;
+  std::vector<std::shared_ptr<ProofNode>> pf = getProofNode(c);
+  std::stringstream out;
   bool commentProves = true;
-  options::ProofFormatMode mode = options::ProofFormatMode::NONE;
-  if (c == modes::PROOF_COMPONENT_RAW_PREPROCESS)
+  // don't need to comment that it proves false
+  if (c == modes::PROOF_COMPONENT_FULL || c == modes::PROOF_COMPONENT_SAT)
   {
-    // use all preprocessed assertions
-    const std::vector<Node>& assertions =
-        d_smtSolver->getPreprocessedAssertions();
-    connectToPreprocess = true;
-    // We start with (ASSUME a) for each preprocessed assertion a. This
-    // proof will be connected to the proof of preprocessing for a.
-    ProofNodeManager* pnm = d_pfManager->getProofNodeManager();
-    for (const Node& a : assertions)
-    {
-      ps.push_back(pnm->mkAssume(a));
-    }
-  }
-  else if (c == modes::PROOF_COMPONENT_SAT)
-  {
-    ps.push_back(pe->getProof(false));
-    // don't need to comment that it proves false
     commentProves = false;
   }
-  else if (c == modes::PROOF_COMPONENT_THEORY_LEMMAS
-           || c == modes::PROOF_COMPONENT_PREPROCESS)
-  {
-    ps = pe->getProofLeaves(c);
-    // connect to preprocess proofs for preprocess mode
-    connectToPreprocess = (c == modes::PROOF_COMPONENT_PREPROCESS);
-  }
-  else if (c == modes::PROOF_COMPONENT_FULL)
-  {
-    ps.push_back(pe->getProof(true));
-    connectToPreprocess = true;
-    connectMkOuterScope = true;
-    // don't need to comment that it proves false
-    commentProves = false;
-    // we print in the format based on the proof mode
-    mode = options().proof.proofFormatMode;
-  }
-  else
-  {
-    std::stringstream ss;
-    ss << "Unknown proof component " << c << std::endl;
-    throw RecoverableModalException(ss.str());
-  }
-
-  Assert(d_pfManager);
-  std::ostringstream ss;
-  // connect proofs to preprocessing, if specified
-  if (connectToPreprocess)
-  {
-    ProofScopeMode scopeMode = connectMkOuterScope
-                                   ? ProofScopeMode::DEFINITIONS_AND_ASSERTIONS
-                                   : ProofScopeMode::NONE;
-    for (std::shared_ptr<ProofNode>& p : ps)
-    {
-      Assert(p != nullptr);
-      p = d_pfManager->connectProofToAssertions(
-          p, *d_smtSolver.get(), scopeMode);
-    }
-  }
-  // print all proofs
-  // we currently only print outermost parentheses if the format is NONE
-  if (mode == options::ProofFormatMode::NONE)
-  {
-    ss << "(" << std::endl;
-  }
-  for (std::shared_ptr<ProofNode>& p : ps)
-  {
-    if (commentProves)
-    {
-      ss << "(!" << std::endl;
-    }
-    d_pfManager->printProof(ss, p, mode);
-    ss << std::endl;
-    if (commentProves)
-    {
-      ss << ":proves " << p->getResult() << ")" << std::endl;
-    }
-  }
-  if (mode == options::ProofFormatMode::NONE)
-  {
-    ss << ")" << std::endl;
-  }
-  return ss.str();
+  proofsToString(out, pf, commentProves);
+  return out.str();
 }
 
 void SolverEngine::printInstantiations(std::ostream& out)

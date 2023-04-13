@@ -44,6 +44,7 @@ class NodeTemplate;
 typedef NodeTemplate<true> Node;
 typedef NodeTemplate<false> TNode;
 class TypeNode;
+class ProofNode;
 
 class Env;
 class UnsatCore;
@@ -993,6 +994,21 @@ class CVC5_EXPORT SolverEngine
   /** Vector version of above. */
   void ensureWellFormedTerms(const std::vector<Node>& ns,
                              const std::string& src) const;
+
+  /**
+   * Retrieves the selected proof component as a proof node.  Intended to
+   * be printed.
+   */
+  std::vector<std::shared_ptr<ProofNode>> getProofNode(
+      modes::ProofComponent c = modes::PROOF_COMPONENT_FULL);
+
+  /**
+   * Prints a proof node using the currently configured proof format.
+   */
+  void proofsToString(std::ostream& out,
+                      std::vector<std::shared_ptr<ProofNode>> fp,
+                      bool commentProves = true);
+
   /* Members -------------------------------------------------------------- */
 
   /** Solver instance that owns this SolverEngine instance. */

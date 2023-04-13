@@ -130,7 +130,7 @@ class PfManager : protected EnvObj
   std::shared_ptr<ProofNode> connectProofToAssertions(
       std::shared_ptr<ProofNode> pfn,
       SmtSolver& smt,
-      ProofScopeMode scopeMode = ProofScopeMode::UNIFIED);
+      ProofScopeMode scopeMode = ProofScopeMode::DEFINITIONS_AND_ASSERTIONS);
   //--------------------------- access to utilities
   /** Get a pointer to the ProofChecker owned by this. */
   ProofChecker* getProofChecker() const;
