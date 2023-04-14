@@ -1433,7 +1433,8 @@ void SolverEngine::checkProof()
   if (d_env->getOptions().smt.checkProofs)
   {
     // connect proof to assertions, which will fail if the proof is malformed
-    d_pfManager->connectProofToAssertions(pePfn, *d_smtSolver.get());
+    d_pfManager->connectProofToAssertions(
+        pePfn, *d_smtSolver.get(), ProofScopeMode::UNIFIED);
   }
 }
 
@@ -1470,8 +1471,8 @@ UnsatCore SolverEngine::getUnsatCoreInternal(bool isInternal)
   std::shared_ptr<ProofNode> pepf = cdp.getProofFor(fnode);
 
   Assert(pepf != nullptr);
-  std::shared_ptr<ProofNode> pfn =
-      d_pfManager->connectProofToAssertions(pepf, *d_smtSolver.get());
+  std::shared_ptr<ProofNode> pfn = d_pfManager->connectProofToAssertions(
+      pepf, *d_smtSolver.get(), ProofScopeMode::UNIFIED);
   std::vector<Node> core;
   d_ucManager->getUnsatCore(
       pfn, d_smtSolver->getAssertions(), core, isInternal);
