@@ -21,7 +21,6 @@
 #include <cvc5/cvc5_kind.h>
 #include <cvc5/cvc5_sort_kind.h>
 #include <cvc5/cvc5_types.h>
-#include <cvc5/cvc5_proof_rule.h>
 
 #include <functional>
 #include <map>
@@ -5330,9 +5329,6 @@ class CVC5_EXPORT Proof
      */
     ~Proof();
 
-    /** @return The proof rule used by the root step of the proof. */
-    ProofRule getRule() const;
-  
     /** @return The conclusion of the root step of the proof. */
     Term getResult() const;
 

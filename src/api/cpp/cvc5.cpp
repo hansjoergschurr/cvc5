@@ -8117,11 +8117,6 @@ Proof::~Proof()
   d_proof_node.reset();
 }
 
-ProofRule Proof::getRule() const
-{
-  return (ProofRule)this->getProofNode()->getRule();
-}
-
 Term Proof::getResult() const
 {
   return Term(this->d_solver->d_nm, this->getProofNode()->getResult());
