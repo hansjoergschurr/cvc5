@@ -303,7 +303,7 @@ void PfManager::translateDifficultyMap(std::map<Node, Node>& dmap,
   cdp.addStep(fnode, PfRule::SAT_REFUTATION, ppAsserts, {});
   std::shared_ptr<ProofNode> pf = cdp.getProofFor(fnode);
   Trace("difficulty-proc") << "Get final proof" << std::endl;
-  std::shared_ptr<ProofNode> fpf = connectProofToAssertions(pf, smt);
+  std::shared_ptr<ProofNode> fpf = connectProofToAssertions(pf, smt, ProofScopeMode::UNIFIED);
   Trace("difficulty-debug") << "Final proof is " << *fpf.get() << std::endl;
   // We are typically a SCOPE here, although if we are not, then the proofs
   // have no free assumptions. If this is the case, then the only difficulty
