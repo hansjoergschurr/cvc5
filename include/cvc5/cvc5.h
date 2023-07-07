@@ -3228,7 +3228,7 @@ class CVC5_EXPORT Proof
   const std::vector<Proof> getChildren() const;
 
   /**
-   * @return The arguments of the roto step of the proof as a vector of terms.
+   * @return The arguments of the root step of the proof as a vector of terms.
    *         Some of those terms might be strings.
    */
   const std::vector<Term> getArguments() const;
@@ -4341,7 +4341,7 @@ class CVC5_EXPORT Solver
    * @warning This method is experimental and may change in future versions.
    *
    * @param c The component of the proof to return
-   * @return A vector of proofs.
+   * @return A vector of proof nodes.
    */
   std::vector<Proof> getProof(
       modes::ProofComponent c = modes::PROOF_COMPONENT_FULL) const;
