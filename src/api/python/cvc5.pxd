@@ -10,7 +10,7 @@ from libcpp.map cimport map
 from libcpp.pair cimport pair
 from cvc5kinds cimport Kind
 from cvc5sortkinds cimport SortKind
-from cvc5types cimport BlockModelsMode, LearnedLitType, ProofComponent, RoundingMode, UnknownExplanation
+from cvc5types cimport BlockModelsMode, LearnedLitType, ProofComponent, ProofFormat, RoundingMode, UnknownExplanation
 
 
 cdef extern from "<iostream>" namespace "std":
@@ -318,7 +318,8 @@ cdef extern from "<cvc5/cvc5.h>" namespace "cvc5":
                           Term term, bint glbl) except +
         Term defineFunsRec(vector[Term]& funs, vector[vector[Term]]& bound_vars,
                            vector[Term]& terms, bint glbl) except +
-        string getProof(ProofComponent c) except +
+        vector[Proof] getProof(ProofComponent c) except +
+        string proofsToString(vector[Proof] proofs, ProofFormat format, ProofComponent component) except +
         vector[Term] getLearnedLiterals(LearnedLitType type) except +
         vector[Term] getAssertions() except +
         string getInfo(const string& flag) except +
@@ -545,3 +546,8 @@ cdef extern from "<cvc5/cvc5.h>" namespace "cvc5":
     cdef cppclass TermHashFunction:
         TermHashFunction() except +
         size_t operator()(const Term & t) except +
+
+    cdef cppclass Proof:
+        Term getResult() except +
+        vector[Proof] getChildren() except +
+        vector[Term] getArguments() except +
