@@ -2,6 +2,13 @@ This file contains a summary of important user-visible changes.
 
 **New Features**
 
+- API: A new API for proofs is available.  The new `Proof` class represents
+       a node of the proof tree.  The function
+       `Solver::getProof(modes::ProofComponent c = modes::PROOF_COMPONENT_FULL)`
+       returns the root proof nodes of a proof component as a vector.  
+       The function `Solver::proofsToString(std::vector<Proof> proof,
+       modes::ProofFormat format, modes::ProofComponent component)` can be used
+       to print proof components to a string with a specified proof format.
 - API: New API function
        `Solver::mkFloatingPoint(const Term& sign, const Term& exp, const Term& sig)`,
        returns a floating-point value from the three IEEE-754 bit-vector value
