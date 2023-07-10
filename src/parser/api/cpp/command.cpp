@@ -1537,7 +1537,7 @@ void GetProofCommand::invoke(cvc5::Solver* solver, SymbolManager* sm)
     {
       ss << "(\n";
     }
-    ss << solver->proofsToString(ps, modes::PROOF_FORMAT_DEFAULT, d_component)
+    ss << solver->proofToString(ps, modes::PROOF_FORMAT_DEFAULT, d_component)
        << "\n";
     if (outermostParentheses)
     {
