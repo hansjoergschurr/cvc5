@@ -24,6 +24,9 @@ name   = "Proof"
 [[option.mode.ALETHE]]
   name       = "alethe"
   help       = "Output Alethe proof"
+[[option.mode.ALETHELF]]
+  name       = "alethelf"
+  help       = "Output AletheLS proof (experimental)"
 [[option.mode.TPTP]]
   name       = "tptp"
   help       = "Output TPTP proof (work in progress)"

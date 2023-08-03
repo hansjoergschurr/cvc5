@@ -246,6 +246,14 @@ void PfManager::printProof(std::ostream& out,
     lpfpp.process(fp);
     proof::LeanPrinter::print(out, assertions, fp);
   }
+  else if (mode == options::ProofFormatMode::ALETHELF)
+  {
+    Assert(fp->getRule() == PfRule::SCOPE);
+    std::vector<Node> assertions = fp->getArguments();
+    proof::AlethelfProofPostprocess alfpp(d_env);
+    alfpp.process(fp);
+    proof::AlethelfPrinter::print(out, assertions, fp);
+  }
   else if (mode == options::ProofFormatMode::ALETHE)
   {
     proof::AletheNodeConverter anc;
