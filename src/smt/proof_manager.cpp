@@ -235,6 +235,14 @@ void PfManager::printProof(std::ostream& out,
     proof::DotPrinter dotPrinter(d_env);
     dotPrinter.print(out, fp.get());
   }
+  else if (mode == options::ProofFormatMode::ALETHELF)
+  {
+    Assert(fp->getRule() == PfRule::SCOPE);
+    std::vector<Node> assertions = fp->getArguments();
+    proof::AlethelfProofPostprocess alfpp(d_env);
+    alfpp.process(fp);
+    proof::AlethelfPrinter::print(out, assertions, fp);
+  }
   else if (mode == options::ProofFormatMode::ALETHE)
   {
     proof::AletheNodeConverter anc;

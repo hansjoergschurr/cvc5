@@ -164,6 +164,10 @@ libcvc5_add_sources(
   proof/lazy_proof_chain.h
   proof/lazy_tree_proof_generator.cpp
   proof/lazy_tree_proof_generator.h
+  proof/alethelf/alethelf_post_processor.cpp
+  proof/alethelf/alethelf_post_processor.h
+  proof/alethelf/alethelf_printer.cpp
+  proof/alethelf/alethelf_printer.h
   proof/lfsc/lfsc_list_sc_node_converter.cpp
   proof/lfsc/lfsc_list_sc_node_converter.h
   proof/lfsc/lfsc_node_converter.cpp
