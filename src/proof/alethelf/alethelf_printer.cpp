@@ -15,109 +15,113 @@
 
 #include "proof/alethelf/alethelf_printer.h"
 
+#include <cctype>
 #include <iostream>
+#include <memory>
+#include <ostream>
 #include <sstream>
 
 #include "expr/node_algorithm.h"
+#include "proof/proof_node_to_sexpr.h"
 
 namespace cvc5::internal {
 
 namespace proof {
 
-// This is some Lean stuff I need to update
-void AletheLFPrinter::printAletheLFString(std::ostream& s, Node n)
+std::string AletheLFPrinter::getRuleName(std::shared_ptr<ProofNode> pfn)
 {
-  Kind k = n.getKind();
-  if (k == kind::VARIABLE)
-  {
-    s << n.toString();
-  }
-  else
-  {
-    s << "(";
-    printKind(s, k);
-    s << " ";
-    for (size_t i = 0, size = n.getNumChildren(); i < size; ++i)
-    {
-      printAletheLFString(s, n[i]);
-      if (i != size - 1)
-      {
-        s << " ";
-      };
-    }
-    s << ")";
-  }
+  std::string name = toString(pfn->getRule());
+  std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) {
+    return std::tolower(c);
+  });
+  return name;
 }
 
-void AletheLFPrinter::printAletheLFType(std::ostream& s, Node n)
+void AletheLFPrinter::printProof(
+    std::ostream& out,
+    std::shared_ptr<ProofNode> pfn,
+    size_t& lastStep,
+    std::map<std::shared_ptr<ProofNode>, size_t>& stepMap)
 {
-  // convert from node to AletheLF Type syntax:
-  // products are curried
-  // types are wrapped in "holds [_]"
-  Kind k = n.getKind();
-  switch (k)
-  {
-    case kind::VARIABLE: s << n.toString(); break;
-    case kind::AND:
-    {
-      printAletheLFType(s, n[0]);
-      s << " -> ";
-      printAletheLFType(s, n[1]);
-      break;
-    }
-    default:
-      s << "thHolds ";
-      printAletheLFString(s, n);
-      break;
-  }
-}
-
-void AletheLFPrinter::printAletheLFTypeToBottom(std::ostream& s, Node n)
-{
-  // print AletheLF type corresponding to proof of unsatisfiability
-  printAletheLFType(s, n[0]);
-  s << " -> holds []";
-}
-
-void AletheLFPrinter::printProof(std::ostream& out,
-                                 std::shared_ptr<ProofNode> pfn,
-                                 std::map<Node, std::string>& passumeMap)
-{
-  // print rule specific lean syntax, traversing children before parents in
-  // ProofNode tree
-  const std::vector<Node>& args = pfn->getArguments();
-  const std::vector<std::shared_ptr<ProofNode>>& children = pfn->getChildren();
   if (pfn->getRule() == PfRule::SCOPE)
   {
-    // ?
+    out << "; Oh no! it's a scope." << std::endl;
   }
-  else
+
+  const std::vector<std::shared_ptr<ProofNode>>& children = pfn->getChildren();
+  for (const std::shared_ptr<ProofNode>& ch : children)
   {
-    for (const std::shared_ptr<ProofNode>& ch : children)
-    {
-      printProof(out, ch, passumeMap);
-    }
+    printProof(out, ch, lastStep, stepMap);
   }
-  switch (pfn->getRule())
+
+  if (pfn->getRule() == PfRule::SCOPE)
   {
-    default:
-    {
-      out << args;
-      out << " ?\n";
-      break;
-    }
+    return;
   }
+
+  lastStep += 1;
+  out << "(step t" << lastStep << " " << pfn->getResult() << " :rule "
+      << getRuleName(pfn);
+
+  if (pfn->getChildren().size() == 0 && pfn->getArguments().size() > 0)
+  {
+    out << " :premises ()";
+  }
+  else if (pfn->getChildren().size() > 0)
+  {
+    bool first = true;
+    for (std::shared_ptr<ProofNode> premise : pfn->getChildren())
+    {
+      if (first)
+      {
+        out << " :premises (";
+        first = false;
+      }
+      else
+      {
+        out << " ";
+      }
+      out << "t" << stepMap[premise];
+    }
+    out << ")";
+  }
+  if (pfn->getArguments().size() > 0)
+  {
+    // Hack to get the arguments converted into something useful
+    ProofNodeToSExpr sexpPrinter;
+    Node sexp = sexpPrinter.convertToSExpr(pfn.get(), false);
+    bool first = true;
+    for (Node arg : sexp[sexp.getNumChildren() - 1])
+    {
+      if (first)
+      {
+        out << " :args (";
+        first = false;
+      }
+      else
+      {
+        out << " ";
+      }
+      out << arg;
+    }
+    out << ")";
+  }
+  out << ")" << std::endl;
+
+  stepMap[pfn] = lastStep;
 }
 
-void AletheLFPrinter::printSortsAndConstants(
-    std::ostream& out,
-    const std::vector<Node>& assertions,
-    std::shared_ptr<ProofNode> pfn)
+void AletheLFPrinter::printSortsAndConstants(std::ostream& out,
+                                             std::shared_ptr<ProofNode> pfn)
 {
+  // TODO: this does something, I don't know what
+
   // Print user defined sorts and constants of those sorts
   std::unordered_set<Node> syms;
   std::unordered_set<TNode> visited;
   std::vector<Node> iasserts;
+
+  const std::vector<Node>& assertions = pfn->getArguments();
   for (const Node& a : assertions)
   {
     expr::getSymbols(a, syms, visited);
@@ -143,20 +147,15 @@ void AletheLFPrinter::printSortsAndConstants(
   }
 }
 
-void AletheLFPrinter::print(std::ostream& out,
-                            const std::vector<Node>& assertions,
-                            std::shared_ptr<ProofNode> pfn)
+void AletheLFPrinter::print(std::ostream& out, std::shared_ptr<ProofNode> pfn)
 {
   // outer method to print valid AletheLF output from a ProofNode
-  std::map<Node, std::string> passumeMap;
-  const std::vector<Node>& args = pfn->getArguments();
-  out << "open smt\n";
-  out << "open smt.sort smt.term\n";
-  printSortsAndConstants(out, assertions, pfn);
-  out << "noncomputable theorem th0 : ";
-  printAletheLFTypeToBottom(out, args[1]);
-  out << " := \n";
-  printProof(out, pfn, passumeMap);
+  std::map<std::shared_ptr<ProofNode>, size_t> stepMap;
+  size_t lastStep = 0;
+
+  out << "(import \"../proof/rules/Boolean.smt2\")\n";
+  printSortsAndConstants(out, pfn);
+  printProof(out, pfn, lastStep, stepMap);
   out << "\n";
 }
 

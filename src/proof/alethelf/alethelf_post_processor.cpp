@@ -43,7 +43,7 @@ bool AletheLFProofPostprocessCallback::shouldUpdate(
     const std::vector<Node>& fa,
     bool& continueUpdate)
 {
-  return pn->getRule() != PfRule::LEAN_RULE;
+  return false;
 };
 
 bool AletheLFProofPostprocessCallback::update(Node res,
