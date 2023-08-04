@@ -12,6 +12,9 @@
  *
  * The printer for the experimental AletheLF format.
  */
+#include <cstddef>
+#include <memory>
+
 #include "cvc5_private.h"
 
 #ifndef CVC4__PROOF__ALETHELF_PROOF_PRINTER_H
@@ -36,40 +39,13 @@ class AletheLFPrinter
   /**
    * Print the full proof of assertions => false by pfn.
    */
-  static void print(std::ostream& out,
-                    const std::vector<Node>& assertions,
-                    std::shared_ptr<ProofNode> pfn);
+  static void print(std::ostream& out, std::shared_ptr<ProofNode> pfn);
 
  private:
-  /**
-   * The AletheLF calculus represents x = y as (mkEq x y) and
-   *  x ∧ y as (mkAnd x y).
-   * printKind cases on the kind of node, and prints the
-   *  corresponding AletheLF command among mkEq, mkAnd, mkOr, mkNot, etc
-   */
-  static void printKind(std::ostream& s, Kind k);
-  /**
-   * Convert a node to a AletheLF term -- must start with mk_ and take children
-   * as args Example: kind::AND (kind::EQUAL a b) c --> mkAnd (mkEq a b) c
-   */
-  static void printAletheLFString(std::ostream& s, Node n);
-  /**
-   * Convert from node to AletheLF type syntax
-   */
-  static void printAletheLFType(std::ostream& s, Node n);
-  /**
-   * Print AletheLF type corresponding to proof of unsatisfiability.
-   * This method is a wrapper around printAletheLFType.
-   *  The full proof node will always be a proof of unsatisfiability
-   *  via resolution. So the type printed to AletheLF will always end
-   *  in "-> holds []", which acts like a proof of contradiction, or false.
-   */
-  static void printAletheLFTypeToBottom(std::ostream& s, Node n);
   /**
    * Print user defined sorts and constants of those sorts
    */
   static void printSortsAndConstants(std::ostream& out,
-                                     const std::vector<Node>& assertions,
                                      std::shared_ptr<ProofNode> pfn);
 
   /**
@@ -83,7 +59,11 @@ class AletheLFPrinter
    */
   static void printProof(std::ostream& out,
                          std::shared_ptr<ProofNode> pfn,
-                         std::map<Node, std::string>& passumeMap);
+                         size_t& lastStep,
+                         std::map<std::shared_ptr<ProofNode>, size_t>& stepMap);
+
+  /* Returns the proof name normalized */
+  static std::string getRuleName(std::shared_ptr<ProofNode> pfn);
 };
 
 }  // namespace proof
