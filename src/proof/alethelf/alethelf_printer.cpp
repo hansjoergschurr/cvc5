@@ -37,29 +37,12 @@ std::string AletheLFPrinter::getRuleName(std::shared_ptr<ProofNode> pfn)
   return name;
 }
 
-void AletheLFPrinter::printProof(
+void AletheLFPrinter::printOrdinaryStep(
     std::ostream& out,
     std::shared_ptr<ProofNode> pfn,
-    size_t& lastStep,
+    const size_t& lastStep,
     std::map<std::shared_ptr<ProofNode>, size_t>& stepMap)
 {
-  if (pfn->getRule() == PfRule::SCOPE)
-  {
-    out << "; Oh no! it's a scope." << std::endl;
-  }
-
-  const std::vector<std::shared_ptr<ProofNode>>& children = pfn->getChildren();
-  for (const std::shared_ptr<ProofNode>& ch : children)
-  {
-    printProof(out, ch, lastStep, stepMap);
-  }
-
-  if (pfn->getRule() == PfRule::SCOPE)
-  {
-    return;
-  }
-
-  lastStep += 1;
   out << "(step t" << lastStep << " " << pfn->getResult() << " :rule "
       << getRuleName(pfn);
 
@@ -107,7 +90,35 @@ void AletheLFPrinter::printProof(
     out << ")";
   }
   out << ")" << std::endl;
+}
 
+void AletheLFPrinter::printProof(
+    std::ostream& out,
+    std::shared_ptr<ProofNode> pfn,
+    size_t& lastStep,
+    std::map<std::shared_ptr<ProofNode>, size_t>& stepMap)
+{
+  if (pfn->getRule() == PfRule::SCOPE)
+  {
+    out << "; Oh no! it's a scope." << std::endl;
+  }
+
+  const std::vector<std::shared_ptr<ProofNode>>& children = pfn->getChildren();
+  for (const std::shared_ptr<ProofNode>& ch : children)
+  {
+    printProof(out, ch, lastStep, stepMap);
+  }
+
+  switch (pfn->getRule())
+  {
+    case PfRule::SCOPE: return;
+    case PfRule::ASSUME:
+      out << "(assume t" << lastStep << " " << pfn->getResult() << ")"
+          << std::endl;
+      break;
+    default: printOrdinaryStep(out, pfn, lastStep, stepMap); break;
+  }
+  lastStep += 1;
   stepMap[pfn] = lastStep;
 }
 

@@ -64,6 +64,13 @@ class AletheLFPrinter
 
   /* Returns the proof name normalized */
   static std::string getRuleName(std::shared_ptr<ProofNode> pfn);
+
+ private:
+  static void printOrdinaryStep(
+      std::ostream& out,
+      std::shared_ptr<ProofNode> pfn,
+      const size_t& lastStep,
+      std::map<std::shared_ptr<ProofNode>, size_t>& stepMap);
 };
 
 }  // namespace proof
