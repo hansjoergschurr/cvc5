@@ -118,8 +118,8 @@ void AletheLFPrinter::printProof(
       break;
     default: printOrdinaryStep(out, pfn, lastStep, stepMap); break;
   }
-  lastStep += 1;
   stepMap[pfn] = lastStep;
+  lastStep += 1;
 }
 
 void AletheLFPrinter::printSortsAndConstants(std::ostream& out,
@@ -164,7 +164,6 @@ void AletheLFPrinter::print(std::ostream& out, std::shared_ptr<ProofNode> pfn)
   std::map<std::shared_ptr<ProofNode>, size_t> stepMap;
   size_t lastStep = 0;
 
-  out << "(import \"../proof/rules/Boolean.smt2\")\n";
   printSortsAndConstants(out, pfn);
   printProof(out, pfn, lastStep, stepMap);
   out << "\n";
