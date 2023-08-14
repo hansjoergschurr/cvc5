@@ -43,7 +43,13 @@ bool AletheLFProofPostprocessCallback::shouldUpdate(
     const std::vector<Node>& fa,
     bool& continueUpdate)
 {
-  return false;
+  switch (pn->getRule())
+  {
+    case PfRule::CHAIN_RESOLUTION:
+      return true;
+    default:
+      return false;
+  }
 };
 
 bool AletheLFProofPostprocessCallback::update(Node res,
@@ -53,7 +59,20 @@ bool AletheLFProofPostprocessCallback::update(Node res,
                                               CDProof* cdp,
                                               bool& continueUpdate)
 {
-  return false;
+  NodeManager* nm = NodeManager::currentNM();
+  switch (id)
+  {
+    case PfRule::CHAIN_RESOLUTION:
+      // create and_intro for each child
+      // create big and for args
+      Assert(children.size() >= 2);
+      Node conj = nm->mkNode(AND, children)
+      cdp->addStep(res,dPfRule::AND_INTRO, children, std::vector<Node>());
+      return cdp.addStep(res, PfRule::ALETHE_RULE, children, newArgs);
+      return true;
+    default:
+      return false;
+  }
 }
 
 void AletheLFProofPostprocess::process(std::shared_ptr<ProofNode> pf)
