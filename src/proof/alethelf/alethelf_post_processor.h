@@ -21,6 +21,7 @@
 #include <map>
 #include <unordered_set>
 
+#include "proof/alethelf/alethelf_proof_rule.h"
 #include "proof/proof_checker.h"
 #include "proof/proof_node_updater.h"
 
@@ -61,6 +62,12 @@ class AletheLFProofPostprocessCallback : public ProofNodeUpdaterCallback
    * proof steps. This is currently only used in the resolution rule.
    */
   ProofChecker* d_pc;
+
+  bool addAletheLFStep(AletheLFRule rule,
+                       Node conclusion,
+                       const std::vector<Node>& children,
+                       const std::vector<Node>& args,
+                       CDProof& cdp);
 };
 
 /**

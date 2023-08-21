@@ -22,6 +22,7 @@
 #include <sstream>
 
 #include "expr/node_algorithm.h"
+#include "proof/alethelf/alethelf_proof_rule.h"
 #include "proof/proof_node_to_sexpr.h"
 
 namespace cvc5::internal {
@@ -30,7 +31,15 @@ namespace proof {
 
 std::string AletheLFPrinter::getRuleName(std::shared_ptr<ProofNode> pfn)
 {
-  std::string name = toString(pfn->getRule());
+  std::string name;
+  if (pfn->getRule() == PfRule::ALETHELF_RULE)
+  {
+    name = aletheLFRuleToString(getAletheLFRule(pfn->getArguments()[0]));
+  }
+  else
+  {
+    name = toString(pfn->getRule());
+  }
   std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) {
     return std::tolower(c);
   });
@@ -74,8 +83,14 @@ void AletheLFPrinter::printOrdinaryStep(
     ProofNodeToSExpr sexpPrinter;
     Node sexp = sexpPrinter.convertToSExpr(pfn.get(), false);
     bool first = true;
+    bool skipFirst = (pfn->getRule() == PfRule::ALETHELF_RULE);
     for (Node arg : sexp[sexp.getNumChildren() - 1])
     {
+      if (skipFirst)
+      {
+        skipFirst = false;
+        continue;
+      }
       if (first)
       {
         out << " :args (";

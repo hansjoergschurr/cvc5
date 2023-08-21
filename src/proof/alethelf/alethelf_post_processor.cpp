@@ -47,10 +47,29 @@ bool AletheLFProofPostprocessCallback::shouldUpdate(
   {
     case PfRule::CHAIN_RESOLUTION:
       return true;
+    case PfRule::CONG: return true;
     default:
       return false;
   }
-};
+}
+
+bool AletheLFProofPostprocessCallback::addAletheLFStep(
+    AletheLFRule rule,
+    Node conclusion,
+    const std::vector<Node>& children,
+    const std::vector<Node>& args,
+    CDProof& cdp)
+{
+  std::vector<Node> newArgs{NodeManager::currentNM()->mkConstInt(
+      Rational(static_cast<uint32_t>(rule)))};
+  for (const Node& arg : args)
+  {
+    newArgs.push_back(arg);
+  }
+  Trace("alethe-proof") << "... add alethelf step " << conclusion << " " << rule
+                        << " " << children << " / " << newArgs << std::endl;
+  return cdp.addStep(conclusion, PfRule::ALETHELF_RULE, children, newArgs);
+}
 
 bool AletheLFProofPostprocessCallback::update(Node res,
                                               PfRule id,
@@ -59,17 +78,49 @@ bool AletheLFProofPostprocessCallback::update(Node res,
                                               CDProof* cdp,
                                               bool& continueUpdate)
 {
+  Trace("alethelf-proof") << "...AletheLF pre-update " << res << " " << id
+                          << " " << children << " / " << args << std::endl;
   NodeManager* nm = NodeManager::currentNM();
+
   switch (id)
   {
     case PfRule::CHAIN_RESOLUTION:
+    {
       // create and_intro for each child
-      // create big and for args
+      // create big conjunction for args
       Assert(children.size() >= 2);
-      Node conj = nm->mkNode(AND, children)
-      cdp->addStep(res,dPfRule::AND_INTRO, children, std::vector<Node>());
-      return cdp.addStep(res, PfRule::ALETHE_RULE, children, newArgs);
-      return true;
+      Node conj = nm->mkNode(kind::AND, children);
+      Node argsList = nm->mkNode(kind::AND, args);
+      // This AND_INTRO will also be preprocessed to multiple AND_INTRO_NARY
+      cdp->addStep(conj, PfRule::AND_INTRO, children, std::vector<Node>());
+      return addAletheLFStep(
+          AletheLFRule::CHAIN_RESOLUTION, res, {conj}, {argsList}, *cdp);
+    }
+    case PfRule::CONG:
+    {
+      Node start;
+
+      // (HO_APPLY (f) l1
+      if (args[0].getKind() == kind::APPLY_UF)
+      {
+        arg = args[1];
+      }
+      else
+      {
+        arg = args[0];
+      }
+
+      Node partialCong = arg;
+      for (const Node& eq : children)
+      {
+        partialCong = nm->mkNode(Kind::APPLY_UF, eq[1]);
+      }
+      Node conj = nm->mkNode(kind::AND, children);
+      Node argsList = nm->mkNode(kind::AND, args);
+
+      addAletheLFStep(AletheLFRule::CONG, res, {conj}, {arg}, *cdp);
+      cdp->addStep(conj, PfRule::AND_INTRO, children, std::vector<Node>());
+    }
     default:
       return false;
   }

@@ -168,6 +168,8 @@ libcvc5_add_sources(
   proof/alethelf/alethelf_post_processor.h
   proof/alethelf/alethelf_printer.cpp
   proof/alethelf/alethelf_printer.h
+  proof/alethelf/alethelf_proof_rule.cpp
+  proof/alethelf/alethelf_proof_rule.h
   proof/lfsc/lfsc_list_sc_node_converter.cpp
   proof/lfsc/lfsc_list_sc_node_converter.h
   proof/lfsc/lfsc_node_converter.cpp
