@@ -22,6 +22,7 @@
 #include <unordered_set>
 
 #include "proof/alethelf/alethelf_proof_rule.h"
+#include "proof/lfsc/lfsc_node_converter.h"
 #include "proof/proof_checker.h"
 #include "proof/proof_node_updater.h"
 
@@ -36,7 +37,8 @@ namespace proof {
 class AletheLFProofPostprocessCallback : public ProofNodeUpdaterCallback
 {
  public:
-  AletheLFProofPostprocessCallback(ProofNodeManager* pnm);
+  AletheLFProofPostprocessCallback(ProofNodeManager* pnm,
+                                   LfscNodeConverter& ltp);
   /**
    * Initialize, called once for each new ProofNode to process. This
    * initializes static information to be used by successive calls to update.
@@ -55,6 +57,11 @@ class AletheLFProofPostprocessCallback : public ProofNodeUpdaterCallback
               CDProof* cdp,
               bool& continueUpdate) override;
 
+  void updateCong(Node res,
+                  const std::vector<Node>& children,
+                  CDProof* cdp,
+                  Node startOp);
+
  private:
   /** The proof node manager */
   ProofNodeManager* d_pnm;
@@ -62,6 +69,9 @@ class AletheLFProofPostprocessCallback : public ProofNodeUpdaterCallback
    * proof steps. This is currently only used in the resolution rule.
    */
   ProofChecker* d_pc;
+
+  /** We reuse the Lfsc node converter when processing the CONG rule */
+  LfscNodeConverter& d_tproc;
 
   bool addAletheLFStep(AletheLFRule rule,
                        Node conclusion,
@@ -77,7 +87,7 @@ class AletheLFProofPostprocessCallback : public ProofNodeUpdaterCallback
 class AletheLFProofPostprocess : protected EnvObj
 {
  public:
-  AletheLFProofPostprocess(Env& env);
+  AletheLFProofPostprocess(Env& env, LfscNodeConverter& ltp);
   /** post-process */
   void process(std::shared_ptr<ProofNode> pf);
 

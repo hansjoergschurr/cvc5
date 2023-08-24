@@ -240,7 +240,8 @@ void PfManager::printProof(std::ostream& out,
   else if (mode == options::ProofFormatMode::ALETHELF)
   {
     Assert(fp->getRule() == PfRule::SCOPE);
-    proof::AletheLFProofPostprocess alfpp(d_env);
+    proof::LfscNodeConverter ltp;
+    proof::AletheLFProofPostprocess alfpp(d_env, ltp);
     alfpp.process(fp);
     proof::AletheLFPrinter::print(out, fp);
   }

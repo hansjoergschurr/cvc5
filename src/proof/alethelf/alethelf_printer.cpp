@@ -77,12 +77,16 @@ void AletheLFPrinter::printOrdinaryStep(
     }
     out << ")";
   }
-  if (pfn->getArguments().size() > 0)
+  if ((pfn->getRule() == PfRule::ALETHELF_RULE
+       && pfn->getArguments().size() > 1)
+      || (pfn->getRule() != PfRule::ALETHELF_RULE
+          && pfn->getArguments().size() > 0))
   {
     // Hack to get the arguments converted into something useful
     ProofNodeToSExpr sexpPrinter;
     Node sexp = sexpPrinter.convertToSExpr(pfn.get(), false);
     bool first = true;
+    // this is a problem
     bool skipFirst = (pfn->getRule() == PfRule::ALETHELF_RULE);
     for (Node arg : sexp[sexp.getNumChildren() - 1])
     {

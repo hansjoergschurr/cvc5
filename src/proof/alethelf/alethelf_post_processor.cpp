@@ -21,20 +21,22 @@
 #include "smt/env.h"
 #include "util/rational.h"
 
-namespace cvc5::internal {
+using namespace cvc5::internal::kind;
 
+namespace cvc5::internal {
 namespace proof {
 
 AletheLFProofPostprocessCallback::AletheLFProofPostprocessCallback(
-    ProofNodeManager* pnm)
-    : d_pnm(pnm), d_pc(pnm->getChecker())
+    ProofNodeManager* pnm, LfscNodeConverter& ltp)
+    : d_pnm(pnm), d_pc(pnm->getChecker()), d_tproc(ltp)
 {
 }
 
-AletheLFProofPostprocess::AletheLFProofPostprocess(Env& env)
+AletheLFProofPostprocess::AletheLFProofPostprocess(Env& env,
+                                                   LfscNodeConverter& ltp)
     : EnvObj(env),
       d_cb(new proof::AletheLFProofPostprocessCallback(
-          env.getProofNodeManager()))
+          env.getProofNodeManager(), ltp))
 {
 }
 
@@ -66,8 +68,9 @@ bool AletheLFProofPostprocessCallback::addAletheLFStep(
   {
     newArgs.push_back(arg);
   }
-  Trace("alethe-proof") << "... add alethelf step " << conclusion << " " << rule
-                        << " " << children << " / " << newArgs << std::endl;
+  Trace("alethels-proof") << "... add alethelf step " << conclusion << " "
+                          << rule << " " << children << " / " << newArgs
+                          << std::endl;
   return cdp.addStep(conclusion, PfRule::ALETHELF_RULE, children, newArgs);
 }
 
@@ -89,8 +92,8 @@ bool AletheLFProofPostprocessCallback::update(Node res,
       // create and_intro for each child
       // create big conjunction for args
       Assert(children.size() >= 2);
-      Node conj = nm->mkNode(kind::AND, children);
-      Node argsList = nm->mkNode(kind::AND, args);
+      Node conj = nm->mkNode(AND, children);
+      Node argsList = nm->mkNode(AND, args);
       // This AND_INTRO will also be preprocessed to multiple AND_INTRO_NARY
       cdp->addStep(conj, PfRule::AND_INTRO, children, std::vector<Node>());
       return addAletheLFStep(
@@ -98,31 +101,140 @@ bool AletheLFProofPostprocessCallback::update(Node res,
     }
     case PfRule::CONG:
     {
-      Node start;
+      Assert(res.getKind() == EQUAL);
+      Assert(res[0].getOperator() == res[1].getOperator());
+      Trace("alethelf-proof") << "Processing congruence for " << res << " "
+                              << res[0].getKind() << std::endl;
 
-      // (HO_APPLY (f) l1
-      if (args[0].getKind() == kind::APPLY_UF)
+      // These Asserts captures features not yet implemented
+      Assert(!res[0].isClosure());
+
+      Kind k = res[0].getKind();
+      if (k == HO_APPLY)
       {
-        arg = args[1];
+        // HO_APPLY congruence is a single application of AletheLF congruence
+        addAletheLFStep(AletheLFRule::HO_CONG, res, children, {}, *cdp);
+        return true;
+      }
+
+      // We are proving f(t1, ..., tn) = f(s1, ..., sn), nested.
+      // First, get the operator, which will be used for printing the base
+      // REFL step. Notice this may be for interpreted or uninterpreted
+      // function symbols.
+      // TODO: this comes from the lfsc converter
+      Node op = d_tproc.getOperatorOfTerm(res[0]);
+      Trace("alethelf-proof") << "Processing cong for op " << op << " "
+                              << op.getType() << std::endl;
+      Assert(!op.isNull());
+      // initial base step is REFL
+      Node opEq = op.eqNode(op);
+      cdp->addStep(opEq, PfRule::REFL, {}, {op});
+      size_t nchildren = children.size();
+      // Are we doing congruence of an n-ary operator? If so, notice that op
+      // is a binary operator and we must apply congruence in a special way.
+      // Note we use the first block of code if we have more than 2 children.
+      // special case: constructors and apply uf are not treated as n-ary; these
+      // symbols have function types that expect n arguments.
+      bool isNary = NodeManager::isNAryKind(k) && k != kind::APPLY_CONSTRUCTOR
+                    && k != kind::APPLY_UF;
+
+      // TODO: is this correct? this was taken from LFSC
+      if (isNary && nchildren > 2)
+      {
+        Node currEq = children[nchildren - 1];
+        for (size_t i = 0; i < nchildren; i++)
+        {
+          size_t ii = (nchildren - 1) - i;
+          Trace("alethelf-proof") << "Process child " << ii << std::endl;
+          Node uop = op;
+          // special case: applications of the following kinds in the chain may
+          // have a different type, so remake the operator here.
+          if (k == kind::BITVECTOR_CONCAT || k == ADD || k == MULT
+              || k == NONLINEAR_MULT)
+          {
+            // we get the operator of the next argument concatenated with the
+            // current accumulated remainder.
+            Node currApp = nm->mkNode(k, children[ii][0], currEq[0]);
+            uop = d_tproc.getOperatorOfTerm(currApp);
+          }
+          Trace("alethelf-proof")
+              << "Apply " << uop << " to " << children[ii][0] << " and "
+              << children[ii][1] << std::endl;
+          Node argAppEq =
+              nm->mkNode(HO_APPLY, uop, children[ii][0])
+                  .eqNode(nm->mkNode(HO_APPLY, uop, children[ii][1]));
+          addAletheLFStep(
+              AletheLFRule::HO_CONG, argAppEq, {opEq, children[ii]}, {}, *cdp);
+          // now, congruence to the current equality
+          Node nextEq;
+          if (ii == 0)
+          {
+            // use final conclusion
+            nextEq = res;
+          }
+          else
+          {
+            // otherwise continue to apply
+            nextEq = nm->mkNode(HO_APPLY, argAppEq[0], currEq[0])
+                         .eqNode(nm->mkNode(HO_APPLY, argAppEq[1], currEq[1]));
+          }
+          // cdp, conclusion, children, rule, args
+          addAletheLFStep(
+              AletheLFRule::HO_CONG, nextEq, {argAppEq, currEq}, {}, *cdp);
+          currEq = nextEq;
+        }
       }
       else
       {
-        arg = args[0];
+        updateCong(res, children, cdp, op);
       }
-
-      Node partialCong = arg;
-      for (const Node& eq : children)
-      {
-        partialCong = nm->mkNode(Kind::APPLY_UF, eq[1]);
-      }
-      Node conj = nm->mkNode(kind::AND, children);
-      Node argsList = nm->mkNode(kind::AND, args);
-
-      addAletheLFStep(AletheLFRule::CONG, res, {conj}, {arg}, *cdp);
-      cdp->addStep(conj, PfRule::AND_INTRO, children, std::vector<Node>());
     }
+    break;
     default:
       return false;
+  }
+  return true;
+}
+
+void AletheLFProofPostprocessCallback::updateCong(
+    Node res, const std::vector<Node>& children, CDProof* cdp, Node startOp)
+{
+  Node currEq;
+  size_t i = 0;
+  size_t nchildren = children.size();
+  if (!startOp.isNull())
+  {
+    // start with reflexive equality on operator
+    currEq = startOp.eqNode(startOp);
+  }
+  else
+  {
+    // first child specifies (higher-order) operator equality
+    currEq = children[0];
+    i++;
+  }
+  Node curL = currEq[0];
+  Node curR = currEq[1];
+  NodeManager* nm = NodeManager::currentNM();
+  for (; i < nchildren; i++)
+  {
+    // CONG rules for each child
+    Node nextEq;
+    if (i + 1 == nchildren)
+    {
+      // if we are at the end, we prove the final equality
+      nextEq = res;
+    }
+    else
+    {
+      curL = nm->mkNode(HO_APPLY, curL, children[i][0]);
+      curR = nm->mkNode(HO_APPLY, curR, children[i][1]);
+      nextEq = curL.eqNode(curR);
+    }
+    // cdp, conclusion, children, rule, args
+    addAletheLFStep(
+        AletheLFRule::HO_CONG, nextEq, {currEq, children[i]}, {}, *cdp);
+    currEq = nextEq;
   }
 }
 
