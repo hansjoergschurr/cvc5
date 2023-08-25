@@ -15,6 +15,8 @@
 
 #include "proof/alethelf/alethelf_post_processor.h"
 
+#include <vector>
+
 #include "proof/lazy_proof.h"
 #include "proof/proof_node_algorithm.h"
 #include "proof/proof_node_manager.h"
@@ -47,6 +49,10 @@ bool AletheLFProofPostprocessCallback::shouldUpdate(
 {
   switch (pn->getRule())
   {
+    case PfRule::AND_INTRO:
+    {
+      return (pn->getChildren().size() > 2);
+    }
     case PfRule::CHAIN_RESOLUTION:
       return true;
     case PfRule::CONG: return true;
@@ -87,6 +93,34 @@ bool AletheLFProofPostprocessCallback::update(Node res,
 
   switch (id)
   {
+    case PfRule::AND_INTRO:
+    {
+      // Split one AND_INTRO into multiple NARY_AND_INTRO (if necessary)
+      // create and_intro for each child
+      size_t n = children.size();
+      Assert(n > 2);
+      Node conj = nm->mkNode(AND, children[n - 2], children[n - 1]);
+      // Create base AND_INTRO
+      cdp->addStep(
+          conj, PfRule::AND_INTRO, {children[n - 2], children[n - 1]}, {});
+      for (size_t i = 3; i <= n; i++)
+      {
+        std::vector<Node> conjuncts = {children[n - i]};
+        for (const Node& child : conj)
+        {
+          conjuncts.push_back(child);
+        }
+        Node nextConj = nm->mkNode(AND, conjuncts);
+        addAletheLFStep(AletheLFRule::AND_INTRO_NARY,
+                        nextConj,
+                        {children[n - i], conj},
+                        {},
+                        *cdp);
+        conj = nextConj;
+      }
+      return true;
+    }
+    break;
     case PfRule::CHAIN_RESOLUTION:
     {
       // create and_intro for each child
