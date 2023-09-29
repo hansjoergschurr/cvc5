@@ -71,7 +71,8 @@ void PropPfManager::checkProof(const context::CDList<Node>& assumptions,
                      "PropPfManager::checkProof");
 }
 
-std::vector<Node> PropPfManager::getUnsatCoreLemmas(const context::CDList<Node>& assumptions)
+std::vector<Node> PropPfManager::getUnsatCoreLemmas(
+    const context::CDList<Node>& assumptions)
 {
   std::vector<Node> usedLemmas;
   std::vector<Node> allLemmas = d_proofCnfStream->getLemmaClauses();

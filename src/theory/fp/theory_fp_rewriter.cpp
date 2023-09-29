@@ -1508,7 +1508,7 @@ RewriteResponse maxTotal(TNode node, bool isPreRewrite)
                           << res.d_node << std::endl;
     }
     return res;
-}
+  }
 
   /**
    * Rewrite a node into the normal form for the theory of fp.

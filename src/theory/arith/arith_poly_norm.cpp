@@ -304,8 +304,8 @@ PolyNorm PolyNorm::mkPolyNorm(TNode n)
           {
             it = visited.find(cur[i]);
             Assert(it != visited.end());
-            if (((k == Kind::SUB || k == Kind::BITVECTOR_SUB) && i == 1) || k == Kind::NEG
-                || k == Kind::BITVECTOR_NEG)
+            if (((k == Kind::SUB || k == Kind::BITVECTOR_SUB) && i == 1)
+                || k == Kind::NEG || k == Kind::BITVECTOR_NEG)
             {
               ret.subtract(it->second);
             }

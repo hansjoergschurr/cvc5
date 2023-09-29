@@ -81,18 +81,18 @@ bool RewriteDbProofCons::prove(CDProof* cdp,
   DslProofRule id;
   Node eq = a.eqNode(b);
   bool success = false;
-  for (size_t i=0; i<2; i++)
+  for (size_t i = 0; i < 2; i++)
   {
-    Node eqi = i==0 ? eq : d_rdnc.convert(eq);
-    if (i==1 && eqi==eq)
+    Node eqi = i == 0 ? eq : d_rdnc.convert(eq);
+    if (i == 1 && eqi == eq)
     {
       break;
     }
     if (!proveInternalBase(eqi, id))
     {
       Trace("rpc-debug") << "- prove internal" << std::endl;
-      // add one to recursion limit, since it is decremented whenever we initiate
-      // the getMatches routine.
+      // add one to recursion limit, since it is decremented whenever we
+      // initiate the getMatches routine.
       d_currRecLimit = recLimit + 1;
       d_currStepLimit = stepLimit;
       // Otherwise, we call the main prove internal method, which recurisvely

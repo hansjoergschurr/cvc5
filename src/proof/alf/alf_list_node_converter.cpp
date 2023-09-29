@@ -15,14 +15,17 @@
 
 #include "proof/alf/alf_list_node_converter.h"
 
+#include "expr/nary_term_util.h"
 #include "printer/printer.h"
 #include "printer/smt2/smt2_printer.h"
-#include "expr/nary_term_util.h"
 
 namespace cvc5::internal {
 namespace proof {
 
-AlfListNodeConverter::AlfListNodeConverter(AlfNodeConverter& tproc) : d_tproc(tproc) {}
+AlfListNodeConverter::AlfListNodeConverter(AlfNodeConverter& tproc)
+    : d_tproc(tproc)
+{
+}
 
 Node AlfListNodeConverter::postConvert(Node n)
 {
@@ -44,10 +47,11 @@ Node AlfListNodeConverter::postConvert(Node n)
         nlistChildren++;
       }
     }
-    if (nlistChildren<2)
+    if (nlistChildren < 2)
     {
       TypeNode tn = NodeManager::currentNM()->booleanType();
-      Node op = d_tproc.mkInternalSymbol(printer::smt2::Smt2Printer::smtKindString(k), tn);
+      Node op = d_tproc.mkInternalSymbol(
+          printer::smt2::Smt2Printer::smtKindString(k), tn);
       std::vector<Node> children;
       children.push_back(op);
       children.push_back(n);
@@ -59,4 +63,3 @@ Node AlfListNodeConverter::postConvert(Node n)
 
 }  // namespace proof
 }  // namespace cvc5::internal
-

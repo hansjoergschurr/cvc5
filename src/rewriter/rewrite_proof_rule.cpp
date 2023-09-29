@@ -127,7 +127,8 @@ void RewriteProofRule::getMatches(Node h, expr::NotifyMatch* ntm) const
   d_mt.getMatches(h, ntm);
 }
 
-Node RewriteProofRule::getConclusion(bool includeContext) const { 
+Node RewriteProofRule::getConclusion(bool includeContext) const
+{
   Node conc = d_conc;
   // if the rule has conclusion s, and term context (lambda x. t[x]), then the
   // conclusion is t[s], which we compute in the block below.
@@ -137,7 +138,7 @@ Node RewriteProofRule::getConclusion(bool includeContext) const {
     Node rhs = context[1].substitute(TNode(context[0][0]), TNode(conc[1]));
     conc = conc[0].eqNode(rhs);
   }
-  return conc; 
+  return conc;
 }
 
 Node RewriteProofRule::getConclusionFor(const std::vector<Node>& ss) const

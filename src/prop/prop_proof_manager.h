@@ -81,7 +81,8 @@ class PropPfManager : protected EnvObj
       const context::CDList<Node>& assumptions, modes::ProofComponent pc);
 
   /** Return lemmas used in the SAT proof. */
-  std::vector<Node> getUnsatCoreLemmas(const context::CDList<Node>& assumptions);
+  std::vector<Node> getUnsatCoreLemmas(
+      const context::CDList<Node>& assumptions);
 
   /**
    * Checks that the prop engine proof is closed w.r.t. the given assertions and

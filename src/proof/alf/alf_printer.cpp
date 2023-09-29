@@ -153,7 +153,8 @@ bool AlfPrinter::isHandled(const ProofNode* pfn) const
       // depends on the operator
       Assert(!pargs.empty());
       Kind k = pargs[0].getKind();
-      return k == Kind::STRING_CONTAINS || k == Kind::STRING_TO_CODE || k == Kind::STRING_INDEXOF;
+      return k == Kind::STRING_CONTAINS || k == Kind::STRING_TO_CODE
+             || k == Kind::STRING_INDEXOF;
     }
     break;
     //
@@ -359,8 +360,9 @@ void AlfPrinter::printDslRule(std::ostream& out, rewriter::DslProofRule r)
   }
   out << ")" << std::endl;
   Node sconc = d_tproc.convert(su.apply(conc));
-  Assert (sconc.getKind()==Kind::EQUAL);
-  out << "  :conclusion (= " << sconc[0] << " " << d_ltproc.convert(sconc[1]) << ")" << std::endl;
+  Assert(sconc.getKind() == Kind::EQUAL);
+  out << "  :conclusion (= " << sconc[0] << " " << d_ltproc.convert(sconc[1])
+      << ")" << std::endl;
   out << ")" << std::endl;
 }
 

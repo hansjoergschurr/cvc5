@@ -29,12 +29,14 @@ using namespace cvc5::internal::theory::bv;
 
 TheoryBVRewriter::TheoryBVRewriter() { initializeRewrites(); }
 
-RewriteResponse TheoryBVRewriter::preRewrite(TNode node) {
+RewriteResponse TheoryBVRewriter::preRewrite(TNode node)
+{
   // no prerewrite to avoid issues with abstract subterms
   return RewriteResponse(REWRITE_DONE, node);
 }
 
-RewriteResponse TheoryBVRewriter::postRewrite(TNode node) {
+RewriteResponse TheoryBVRewriter::postRewrite(TNode node)
+{
   Trace("bitvector-rewrite")
       << "TheoryBV::postRewrite    " << node << std::endl;
   // do not rewrite if has a (strict) abstract subterm
@@ -45,7 +47,8 @@ RewriteResponse TheoryBVRewriter::postRewrite(TNode node) {
       return RewriteResponse(REWRITE_DONE, node);
     }
   }
-  RewriteResponse res = d_rewriteTable[static_cast<uint32_t>(node.getKind())](node, false);
+  RewriteResponse res =
+      d_rewriteTable[static_cast<uint32_t>(node.getKind())](node, false);
   if (res.d_node != node)
   {
     Trace("bitvector-rewrite")
@@ -785,5 +788,6 @@ void TheoryBVRewriter::initializeRewrites()
   d_rewriteTable[static_cast<uint32_t>(Kind::BITVECTOR_EAGER_ATOM)] =
       RewriteEagerAtom;
   d_rewriteTable[static_cast<uint32_t>(Kind::BITVECTOR_SIZE)] = RewriteSize;
-  d_rewriteTable[static_cast<uint32_t>(Kind::CONST_BITVECTOR_SYMBOLIC)] = RewriteConstBvSym;
+  d_rewriteTable[static_cast<uint32_t>(Kind::CONST_BITVECTOR_SYMBOLIC)] =
+      RewriteConstBvSym;
 }
