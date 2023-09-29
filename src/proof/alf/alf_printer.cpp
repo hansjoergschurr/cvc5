@@ -322,7 +322,16 @@ void AlfPrinter::printDslRule(std::ostream& out, rewriter::DslProofRule r)
     sss << uv;
     Node uvi = d_tproc.mkInternalSymbol(sss.str(), uv.getType());
     su.add(varList[i], uvi);
-    out << "(" << uv << " " << uv.getType();
+    out << "(" << uv << " ";
+    TypeNode uvt = uv.getType();
+    if (uvt.getKind()==Kind::ABSTRACT_TYPE)
+    {
+      out << "?";
+    }
+    else
+    {
+      out << uv.getType();
+    }
     if (expr::isListVar(uv))
     {
       expr::markListVar(uvi);
