@@ -805,6 +805,12 @@ void ProofCnfStream::ensureLiteral(TNode n)
   {
     d_cnfStream.convertAtom(n);
   }
+  const std::vector<std::pair<Node, ProofStep>>& steps = d_psb.getSteps();
+  for (const std::pair<Node, ProofStep>& step : steps)
+  {
+    d_proof.addStep(step.first, step.second);
+  }
+  d_psb.clear();
 }
 
 bool ProofCnfStream::hasLiteral(TNode n) const

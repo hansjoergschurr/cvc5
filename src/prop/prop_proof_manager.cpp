@@ -49,12 +49,11 @@ void PropPfManager::registerAssertion(Node assertion)
   d_assertions.push_back(assertion);
 }
 
-void PropPfManager::checkProof(const context::CDList<Node>& assumptions,
-                               const context::CDList<Node>& assertions)
+void PropPfManager::checkProof(const context::CDList<Node>& assertions)
 {
   Trace("sat-proof") << "PropPfManager::checkProof: Checking if resolution "
                         "proof of false is closed\n";
-  std::shared_ptr<ProofNode> conflictProof = getProof(assumptions, false);
+  std::shared_ptr<ProofNode> conflictProof = getProof(false);
   Assert(conflictProof);
   // connect it with CNF proof
   d_pfpp->process(conflictProof);
@@ -71,12 +70,11 @@ void PropPfManager::checkProof(const context::CDList<Node>& assumptions,
                      "PropPfManager::checkProof");
 }
 
-std::vector<Node> PropPfManager::getUnsatCoreLemmas(
-    const context::CDList<Node>& assumptions)
+std::vector<Node> PropPfManager::getUnsatCoreLemmas()
 {
   std::vector<Node> usedLemmas;
   std::vector<Node> allLemmas = d_proofCnfStream->getLemmaClauses();
-  std::shared_ptr<ProofNode> satPf = getProof(assumptions, false);
+  std::shared_ptr<ProofNode> satPf = getProof(false);
   std::vector<Node> satLeaves;
   expr::getFreeAssumptions(satPf.get(), satLeaves);
   for (const Node& lemma : allLemmas)
@@ -90,7 +88,7 @@ std::vector<Node> PropPfManager::getUnsatCoreLemmas(
 }
 
 std::vector<std::shared_ptr<ProofNode>> PropPfManager::getProofLeaves(
-    const context::CDList<Node>& assumptions, modes::ProofComponent pc)
+    modes::ProofComponent pc)
 {
   Trace("sat-proof") << "PropPfManager::getProofLeaves: Getting " << pc
                      << " component proofs\n";
@@ -101,7 +99,7 @@ std::vector<std::shared_ptr<ProofNode>> PropPfManager::getProofLeaves(
       pc == modes::ProofComponent::THEORY_LEMMAS
           ? d_proofCnfStream->getLemmaClausesProofs()
           : d_proofCnfStream->getInputClausesProofs();
-  std::shared_ptr<ProofNode> satPf = getProof(assumptions, false);
+  std::shared_ptr<ProofNode> satPf = getProof(false);
   std::vector<Node> satLeaves;
   expr::getFreeAssumptions(satPf.get(), satLeaves);
   std::vector<std::shared_ptr<ProofNode>> usedPfs;
@@ -116,8 +114,7 @@ std::vector<std::shared_ptr<ProofNode>> PropPfManager::getProofLeaves(
   return usedPfs;
 }
 
-std::shared_ptr<ProofNode> PropPfManager::getProof(
-    const context::CDList<Node>& assumptions, bool connectCnf)
+std::shared_ptr<ProofNode> PropPfManager::getProof(bool connectCnf)
 {
   auto it = d_propProofs.find(connectCnf);
   if (it != d_propProofs.end())
@@ -133,8 +130,7 @@ std::shared_ptr<ProofNode> PropPfManager::getProof(
   if (d_satSolver->hasExternalProof(r, args))
   {
     Assert(r == ProofRule::DRAT_REFUTATION);
-    std::vector<Node> clauses(assumptions.begin(), assumptions.end());
-    Trace("cnf-input") << "#assumptions=" << assumptions.size() << std::endl;
+    std::vector<Node> clauses;
     std::vector<Node> input = d_proofCnfStream->getInputClauses();
     clauses.insert(clauses.end(), input.begin(), input.end());
     Trace("cnf-input") << "#input=" << input.size() << std::endl;
