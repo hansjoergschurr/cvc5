@@ -76,7 +76,8 @@ class PropPfManager : protected EnvObj
    * clauses) or of preprocessed assertion proofs (them the preprocessed
    * assertion assumptions to the added clauses to the SAT solver).
    */
-  std::vector<std::shared_ptr<ProofNode>> getProofLeaves(modes::ProofComponent pc);
+  std::vector<std::shared_ptr<ProofNode>> getProofLeaves(
+      modes::ProofComponent pc);
 
   /** Return lemmas used in the SAT proof. */
   std::vector<Node> getUnsatCoreLemmas();

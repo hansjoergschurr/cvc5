@@ -324,7 +324,7 @@ void AlfPrinter::printDslRule(std::ostream& out, rewriter::DslProofRule r)
     su.add(varList[i], uvi);
     out << "(" << uv << " ";
     TypeNode uvt = uv.getType();
-    if (uvt.getKind()==Kind::ABSTRACT_TYPE)
+    if (uvt.getKind() == Kind::ABSTRACT_TYPE)
     {
       out << "?";
     }
