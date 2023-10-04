@@ -99,6 +99,10 @@ class PropPfManager : protected EnvObj
                   const context::CDList<Node>& assertions);
 
  private:
+  /**
+   * Dump dimacs of the given clauses to the given file.
+   */
+  void dumpDimacs(const std::string& filename, const std::vector<Node>& clauses);
   /** The proofs of this proof manager, which are saved once requested (note the
    * cache is for both the request of the full proof (true) or not (false)).
    *

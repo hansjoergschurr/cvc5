@@ -1240,7 +1240,6 @@ std::shared_ptr<ProofNode> CadicalSolver::getProof(
   Node pfile = nm->mkConst(String(d_pfFile));
   args.push_back(pfile);
   ProofRule r = ProofRule::DRAT_REFUTATION;
-
   /*
   std::vector<Node> core;
   std::vector<SatLiteral> unsat_assumptions;

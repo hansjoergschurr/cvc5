@@ -21,6 +21,7 @@
 #include "prop/prop_proof_manager.h"
 #include "prop/sat_solver.h"
 #include "smt/env.h"
+#include "util/string.h"
 
 namespace cvc5::internal {
 namespace prop {
@@ -117,6 +118,49 @@ std::vector<std::shared_ptr<ProofNode>> PropPfManager::getProofLeaves(
   return usedPfs;
 }
 
+void PropPfManager::dumpDimacs(const std::string& filename, const std::vector<Node>& clauses)
+{
+  std::stringstream dclauses;
+  SatVariable maxVar = 0;
+  // get the unsat core from cadical
+  std::vector<SatLiteral> unsatAssumptions;
+  d_satSolver->getUnsatAssumptions(unsatAssumptions);
+  for (const Node& i : clauses)
+  {
+    if (d_proofCnfStream->hasLiteral(i))
+    {
+      SatLiteral il = d_proofCnfStream->getLiteral(i);
+      if (std::find(unsatAssumptions.begin(), unsatAssumptions.end(), il)
+          == unsatAssumptions.end())
+      {
+        continue;
+      }
+    }
+    std::vector<Node> lits;
+    if (i.getKind() == Kind::OR)
+    {
+      lits.insert(lits.end(), i.begin(), i.end());
+    }
+    else
+    {
+      lits.push_back(i);
+    }
+    Trace("cnf-input") << "Print " << i << std::endl;
+    for (const Node& l : lits)
+    {
+      SatLiteral lit = d_proofCnfStream->getLiteral(l);
+      SatVariable v = lit.getSatVariable();
+      maxVar = v > maxVar ? v : maxVar;
+      dclauses << (lit.isNegated() ? "-" : "") << v << " ";
+    }
+    dclauses << "0" << std::endl;
+  }
+  std::fstream dout(filename, std::ios::out);
+  dout << "p cnf " << maxVar << " " << clauses.size() << std::endl;
+  dout << dclauses.str();
+  dout.close();
+}
+
 std::shared_ptr<ProofNode> PropPfManager::getProof(
     const context::CDList<Node>& assumptions, bool connectCnf)
 {
@@ -136,50 +180,12 @@ std::shared_ptr<ProofNode> PropPfManager::getProof(
   Trace("cnf-input") << "#lemmas=" << lemmas.size() << std::endl;
   clauses.insert(clauses.end(), lemmas.begin(), lemmas.end());
   std::shared_ptr<ProofNode> conflictProof = d_satSolver->getProof(clauses);
-  bool dumpDimacs = true;
-  if (dumpDimacs)
+  // if DRAT, must dump dimacs
+  if (conflictProof->getRule()==ProofRule::DRAT_REFUTATION)
   {
     std::stringstream dinputFile;
-    dinputFile << options().driver.filename << ".drat_input.cnf";
-    std::stringstream dclauses;
-    SatVariable maxVar = 0;
-    // get the unsat core from cadical
-    std::vector<SatLiteral> unsatAssumptions;
-    d_satSolver->getUnsatAssumptions(unsatAssumptions);
-    for (const Node& i : clauses)
-    {
-      if (d_proofCnfStream->hasLiteral(i))
-      {
-        SatLiteral il = d_proofCnfStream->getLiteral(i);
-        if (std::find(unsatAssumptions.begin(), unsatAssumptions.end(), il)
-            == unsatAssumptions.end())
-        {
-          continue;
-        }
-      }
-      std::vector<Node> lits;
-      if (i.getKind() == Kind::OR)
-      {
-        lits.insert(lits.end(), i.begin(), i.end());
-      }
-      else
-      {
-        lits.push_back(i);
-      }
-      Trace("cnf-input") << "Print " << i << std::endl;
-      for (const Node& l : lits)
-      {
-        SatLiteral lit = d_proofCnfStream->getLiteral(l);
-        SatVariable v = lit.getSatVariable();
-        maxVar = v > maxVar ? v : maxVar;
-        dclauses << (lit.isNegated() ? "-" : "") << v << " ";
-      }
-      dclauses << "0" << std::endl;
-    }
-    std::fstream dout(dinputFile.str(), std::ios::out);
-    dout << "p cnf " << maxVar << " " << clauses.size() << std::endl;
-    dout << dclauses.str();
-    dout.close();
+    dinputFile << conflictProof->getArguments()[0].getConst<String>().toString();
+    dumpDimacs(dinputFile.str(), clauses);
   }
 
   Assert(conflictProof);
