@@ -88,10 +88,11 @@ class CadicalSolver : public CDCLTSatSolver, protected EnvObj
 
   std::vector<Node> getOrderHeap() const override;
 
-  std::shared_ptr<ProofNode> getProof(const std::vector<Node>& clauses) override;
+  std::shared_ptr<ProofNode> getProof(
+      const std::vector<Node>& clauses) override;
 
   SatProofManager* getProofManager() override;
-  
+
  private:
   /**
    * Constructor.

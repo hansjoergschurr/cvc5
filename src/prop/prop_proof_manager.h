@@ -68,7 +68,8 @@ class PropPfManager : protected EnvObj
    * assertion and theory lemmas are free assumptions in the returned proof
    * instead of being connected to their proofs.
    */
-  std::shared_ptr<ProofNode> getProof(const context::CDList<Node>& assumptions, bool connectCnf);
+  std::shared_ptr<ProofNode> getProof(const context::CDList<Node>& assumptions,
+                                      bool connectCnf);
 
   /** Return the vector of proofs for the respective proof component requested.
    *
@@ -80,7 +81,8 @@ class PropPfManager : protected EnvObj
       const context::CDList<Node>& assumptions, modes::ProofComponent pc);
 
   /** Return lemmas used in the SAT proof. */
-  std::vector<Node> getUnsatCoreLemmas(const context::CDList<Node>& assumptions);
+  std::vector<Node> getUnsatCoreLemmas(
+      const context::CDList<Node>& assumptions);
 
   /**
    * Checks that the prop engine proof is closed w.r.t. the given assertions and
@@ -93,7 +95,8 @@ class PropPfManager : protected EnvObj
    * engine's proof with the preprocessing proof) and these changes survive for
    * a next check-sat call.
    */
-  void checkProof(const context::CDList<Node>& assumptions, const context::CDList<Node>& assertions);
+  void checkProof(const context::CDList<Node>& assumptions,
+                  const context::CDList<Node>& assertions);
 
  private:
   /** The proofs of this proof manager, which are saved once requested (note the

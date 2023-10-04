@@ -296,7 +296,8 @@ SatProofManager* MinisatSatSolver::getProofManager()
   return d_minisat->getProofManager();
 }
 
-std::shared_ptr<ProofNode> MinisatSatSolver::getProof(const std::vector<Node>& clauses)
+std::shared_ptr<ProofNode> MinisatSatSolver::getProof(
+    const std::vector<Node>& clauses)
 {
   Assert(d_env.isSatProofProducing());
   return d_minisat->getProof();

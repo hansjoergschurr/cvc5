@@ -18,11 +18,11 @@
 #include "prop/cadical.h"
 
 #include "base/check.h"
+#include "options/main_options.h"
 #include "prop/theory_proxy.h"
 #include "util/resource_manager.h"
 #include "util/statistics_registry.h"
 #include "util/string.h"
-#include "options/main_options.h"
 
 namespace cvc5::internal {
 namespace prop {
@@ -1225,7 +1225,8 @@ std::vector<SatLiteral> CadicalSolver::getDecisions() const
 
 std::vector<Node> CadicalSolver::getOrderHeap() const { return {}; }
 
-std::shared_ptr<ProofNode> CadicalSolver::getProof(const std::vector<Node>& clauses)
+std::shared_ptr<ProofNode> CadicalSolver::getProof(
+    const std::vector<Node>& clauses)
 {
   Assert(d_env.isSatProofProducing());
   std::vector<Node> args;
@@ -1239,7 +1240,7 @@ std::shared_ptr<ProofNode> CadicalSolver::getProof(const std::vector<Node>& clau
   Node pfile = nm->mkConst(String(d_pfFile));
   args.push_back(pfile);
   ProofRule r = ProofRule::DRAT_REFUTATION;
-  
+
   /*
   std::vector<Node> core;
   std::vector<SatLiteral> unsat_assumptions;

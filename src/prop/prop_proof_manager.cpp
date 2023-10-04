@@ -15,12 +15,12 @@
 
 #include "prop/prop_proof_manager.h"
 
+#include "options/main_options.h"
 #include "proof/proof_ensure_closed.h"
 #include "proof/proof_node_algorithm.h"
 #include "prop/prop_proof_manager.h"
 #include "prop/sat_solver.h"
 #include "smt/env.h"
-#include "options/main_options.h"
 
 namespace cvc5::internal {
 namespace prop {
@@ -50,7 +50,8 @@ void PropPfManager::registerAssertion(Node assertion)
   d_assertions.push_back(assertion);
 }
 
-void PropPfManager::checkProof(const context::CDList<Node>& assumptions, const context::CDList<Node>& assertions)
+void PropPfManager::checkProof(const context::CDList<Node>& assumptions,
+                               const context::CDList<Node>& assertions)
 {
   Trace("sat-proof") << "PropPfManager::checkProof: Checking if resolution "
                         "proof of false is closed\n";
@@ -71,7 +72,8 @@ void PropPfManager::checkProof(const context::CDList<Node>& assumptions, const c
                      "PropPfManager::checkProof");
 }
 
-std::vector<Node> PropPfManager::getUnsatCoreLemmas(const context::CDList<Node>& assumptions)
+std::vector<Node> PropPfManager::getUnsatCoreLemmas(
+    const context::CDList<Node>& assumptions)
 {
   std::vector<Node> usedLemmas;
   std::vector<Node> allLemmas = d_proofCnfStream->getLemmaClauses();
@@ -115,7 +117,8 @@ std::vector<std::shared_ptr<ProofNode>> PropPfManager::getProofLeaves(
   return usedPfs;
 }
 
-std::shared_ptr<ProofNode> PropPfManager::getProof(const context::CDList<Node>& assumptions, bool connectCnf)
+std::shared_ptr<ProofNode> PropPfManager::getProof(
+    const context::CDList<Node>& assumptions, bool connectCnf)
 {
   auto it = d_propProofs.find(connectCnf);
   if (it != d_propProofs.end())
@@ -123,8 +126,7 @@ std::shared_ptr<ProofNode> PropPfManager::getProof(const context::CDList<Node>& 
     return it->second;
   }
   // retrieve the SAT solver's refutation proof
-  Trace("sat-proof")
-      << "PropPfManager::getProof: Getting proof of false\n";
+  Trace("sat-proof") << "PropPfManager::getProof: Getting proof of false\n";
   std::vector<Node> clauses(assumptions.begin(), assumptions.end());
   Trace("cnf-input") << "#assumptions=" << assumptions.size() << std::endl;
   std::vector<Node> inputs = d_proofCnfStream->getInputClauses();
@@ -179,7 +181,7 @@ std::shared_ptr<ProofNode> PropPfManager::getProof(const context::CDList<Node>& 
     dout << dclauses.str();
     dout.close();
   }
-  
+
   Assert(conflictProof);
   if (TraceIsOn("sat-proof"))
   {

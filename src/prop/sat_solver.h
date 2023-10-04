@@ -171,7 +171,8 @@ class CDCLTSatSolver : public SatSolver
    */
   virtual std::vector<Node> getOrderHeap() const = 0;
 
-  virtual std::shared_ptr<ProofNode> getProof(const std::vector<Node>& clauses) = 0;
+  virtual std::shared_ptr<ProofNode> getProof(
+      const std::vector<Node>& clauses) = 0;
 
   /** This is temporary until SAT DRAT proofs are integrated. */
   virtual SatProofManager* getProofManager() = 0;
