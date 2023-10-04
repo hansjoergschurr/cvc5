@@ -20,6 +20,7 @@
 #include "prop/prop_proof_manager.h"
 #include "prop/sat_solver.h"
 #include "smt/env.h"
+#include "options/main_options.h"
 
 namespace cvc5::internal {
 namespace prop {
@@ -123,21 +124,21 @@ std::shared_ptr<ProofNode> PropPfManager::getProof(const context::CDList<Node>& 
   }
   // retrieve the SAT solver's refutation proof
   Trace("sat-proof")
-      << "PropPfManager::getProof: Getting resolution proof of false\n";
-  std::shared_ptr<ProofNode> conflictProof;
-  ProofRule r;
-  std::vector<Node> args;
-  if (d_satSolver->hasExternalProof(r, args))
+      << "PropPfManager::getProof: Getting proof of false\n";
+  std::vector<Node> clauses(assumptions.begin(), assumptions.end());
+  Trace("cnf-input") << "#assumptions=" << assumptions.size() << std::endl;
+  std::vector<Node> inputs = d_proofCnfStream->getInputClauses();
+  clauses.insert(clauses.end(), inputs.begin(), inputs.end());
+  Trace("cnf-input") << "#input=" << inputs.size() << std::endl;
+  std::vector<Node> lemmas = d_proofCnfStream->getLemmaClauses();
+  Trace("cnf-input") << "#lemmas=" << lemmas.size() << std::endl;
+  clauses.insert(clauses.end(), lemmas.begin(), lemmas.end());
+  std::shared_ptr<ProofNode> conflictProof = d_satSolver->getProof(clauses);
+  bool dumpDimacs = true;
+  if (dumpDimacs)
   {
-    Assert(r == ProofRule::DRAT_REFUTATION);
-    std::vector<Node> clauses(assumptions.begin(), assumptions.end());    // TODO: leads to open proofs
-    Trace("cnf-input") << "#assumptions=" << assumptions.size() << std::endl;
-    std::vector<Node> input = d_proofCnfStream->getInputClauses();
-    clauses.insert(clauses.end(), input.begin(), input.end());
-    Trace("cnf-input") << "#input=" << input.size() << std::endl;
-    std::vector<Node> lemmas = d_proofCnfStream->getLemmaClauses();
-    Trace("cnf-input") << "#lemmas=" << lemmas.size() << std::endl;
-    clauses.insert(clauses.end(), lemmas.begin(), lemmas.end());
+    std::stringstream dinputFile;
+    dinputFile << options().driver.filename << ".drat_input.cnf";
     std::stringstream dclauses;
     SatVariable maxVar = 0;
     // get the unsat core from cadical
@@ -173,30 +174,12 @@ std::shared_ptr<ProofNode> PropPfManager::getProof(const context::CDList<Node>& 
       }
       dclauses << "0" << std::endl;
     }
-    std::fstream dout("drat-input.txt", std::ios::out);
+    std::fstream dout(dinputFile.str(), std::ios::out);
     dout << "p cnf " << maxVar << " " << clauses.size() << std::endl;
     dout << dclauses.str();
     dout.close();
-
-    /*
-    std::vector<Node> core;
-    std::vector<SatLiteral> unsat_assumptions;
-    d_satSolver->getUnsatAssumptions(unsat_assumptions);
-    for (const SatLiteral& lit : unsat_assumptions)
-    {
-      core.push_back(d_proofCnfStream->getNode(lit));
-    }
-    Trace("sat-proof") << "Core is " << core << std::endl;
-    */
-    CDProof cdp(d_env);
-    Node falsen = NodeManager::currentNM()->mkConst(false);
-    cdp.addStep(falsen, r, clauses, args);
-    conflictProof = cdp.getProofFor(falsen);
   }
-  else
-  {
-    conflictProof = d_satSolver->getProof();
-  }
+  
   Assert(conflictProof);
   if (TraceIsOn("sat-proof"))
   {
@@ -226,8 +209,6 @@ std::shared_ptr<ProofNode> PropPfManager::getProof(const context::CDList<Node>& 
     {
       CDProof cdp(d_env);
       // get the clauses added to the SAT solver and add them as assumptions
-      std::vector<Node> inputs = d_proofCnfStream->getInputClauses();
-      std::vector<Node> lemmas = d_proofCnfStream->getLemmaClauses();
       std::vector<Node> allAssumptions{inputs.begin(), inputs.end()};
       allAssumptions.insert(allAssumptions.end(), lemmas.begin(), lemmas.end());
       for (const Node& a : allAssumptions)

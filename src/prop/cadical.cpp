@@ -22,6 +22,7 @@
 #include "util/resource_manager.h"
 #include "util/statistics_registry.h"
 #include "util/string.h"
+#include "options/main_options.h"
 
 namespace cvc5::internal {
 namespace prop {
@@ -936,7 +937,10 @@ CadicalSolver::CadicalSolver(Env& env,
 {
   if (env.isSatProofProducing())
   {
-    d_pfFile = "drat-proof.txt";
+    std::stringstream ssp;
+    ssp << options().driver.filename << ".drat-proof.txt";
+    d_pfFile = ssp.str();
+    // for debugging?
     d_solver->set("binary", 0);
     d_solver->set("inprocessing", 0);
     d_solver->trace_proof(d_pfFile.c_str());
@@ -1221,25 +1225,35 @@ std::vector<SatLiteral> CadicalSolver::getDecisions() const
 
 std::vector<Node> CadicalSolver::getOrderHeap() const { return {}; }
 
-std::shared_ptr<ProofNode> CadicalSolver::getProof()
-{
-  // TODO
-  return nullptr;
-}
-
-bool CadicalSolver::hasExternalProof(ProofRule& r, std::vector<Node>& args)
+std::shared_ptr<ProofNode> CadicalSolver::getProof(const std::vector<Node>& clauses)
 {
   Assert(d_env.isSatProofProducing());
+  std::vector<Node> args;
   d_solver->flush_proof_trace();
   NodeManager* nm = NodeManager::currentNM();
-  std::string dimacs("drat-input.txt");
+  std::stringstream dinputFile;
+  dinputFile << options().driver.filename << ".drat_input.cnf";
   // d_solver->write_dimacs(dimacs.c_str());
-  Node dfile = nm->mkConst(String(dimacs));
+  Node dfile = nm->mkConst(String(dinputFile.str()));
   args.push_back(dfile);
   Node pfile = nm->mkConst(String(d_pfFile));
   args.push_back(pfile);
-  r = ProofRule::DRAT_REFUTATION;
-  return true;
+  ProofRule r = ProofRule::DRAT_REFUTATION;
+  
+  /*
+  std::vector<Node> core;
+  std::vector<SatLiteral> unsat_assumptions;
+  d_satSolver->getUnsatAssumptions(unsat_assumptions);
+  for (const SatLiteral& lit : unsat_assumptions)
+  {
+    core.push_back(d_proofCnfStream->getNode(lit));
+  }
+  Trace("sat-proof") << "Core is " << core << std::endl;
+  */
+  CDProof cdp(d_env);
+  Node falsen = NodeManager::currentNM()->mkConst(false);
+  cdp.addStep(falsen, r, clauses, args);
+  return cdp.getProofFor(falsen);
 }
 
 SatProofManager* CadicalSolver::getProofManager()

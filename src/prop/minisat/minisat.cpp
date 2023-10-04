@@ -296,29 +296,10 @@ SatProofManager* MinisatSatSolver::getProofManager()
   return d_minisat->getProofManager();
 }
 
-std::shared_ptr<ProofNode> MinisatSatSolver::getProof()
+std::shared_ptr<ProofNode> MinisatSatSolver::getProof(const std::vector<Node>& clauses)
 {
   Assert(d_env.isSatProofProducing());
   return d_minisat->getProof();
-}
-
-bool MinisatSatSolver::hasExternalProof(ProofRule& r, std::vector<Node>& args)
-{
-  Assert(d_env.isSatProofProducing());
-  if (options().proof.proofUseDrat)
-  {
-    // dummy code
-    r = ProofRule::DRAT_REFUTATION;
-    NodeManager* nm = NodeManager::currentNM();
-    std::string pfFile("drat-proof.txt");
-    Node pfile = nm->mkConst(String(pfFile));
-    args.push_back(pfile);
-    std::string dimacs("drat-input.txt");
-    Node dfile = nm->mkConst(String(dimacs));
-    args.push_back(dfile);
-    return true;
-  }
-  return false;
 }
 
 /** Incremental interface */
