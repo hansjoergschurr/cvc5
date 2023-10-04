@@ -938,7 +938,7 @@ CadicalSolver::CadicalSolver(Env& env,
   if (env.isSatProofProducing())
   {
     std::stringstream ssp;
-    ssp << options().driver.filename << ".drat-proof.txt";
+    ssp << options().driver.filename << ".drat_proof.txt";
     d_pfFile = ssp.str();
     // for debugging?
     d_solver->set("binary", 0);
