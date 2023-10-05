@@ -19,6 +19,7 @@
 
 #include "base/check.h"
 #include "options/main_options.h"
+#include "options/proof_options.h"
 #include "prop/theory_proxy.h"
 #include "util/resource_manager.h"
 #include "util/statistics_registry.h"
@@ -940,8 +941,10 @@ CadicalSolver::CadicalSolver(Env& env,
     std::stringstream ssp;
     ssp << options().driver.filename << ".drat_proof.txt";
     d_pfFile = ssp.str();
-    // for debugging?
-    d_solver->set("binary", 0);
+    if (!options().proof.dratBinaryFormat)
+    {
+      d_solver->set("binary", 0);
+    }
     d_solver->set("inprocessing", 0);
     d_solver->trace_proof(d_pfFile.c_str());
   }
