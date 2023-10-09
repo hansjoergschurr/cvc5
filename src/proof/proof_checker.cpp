@@ -147,7 +147,6 @@ Node ProofChecker::checkInternal(ProofRule id,
                                  std::stringstream* out,
                                  bool useTrustedChecker)
 {
-  Assert (!enableOutput || out!=nullptr);
   std::map<ProofRule, ProofRuleChecker*>::iterator it = d_checker.find(id);
   if (it == d_checker.end())
   {
