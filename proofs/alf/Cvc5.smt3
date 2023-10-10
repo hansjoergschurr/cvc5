@@ -108,13 +108,8 @@
       ((run_evaluate z)                  z)
     )
 )
-;(program parse_normalize ((T Type) (x T) (y T))
-;    (S) S
-;    (
-;      ((parse_normalize (/ x y)) (
-;    )
-;)
 
+; ProofRule::EVALUATE
 (declare-rule evaluate ((U Type) (t U))
   :args (t)
   :conclusion (= t (run_evaluate t)))

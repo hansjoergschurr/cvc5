@@ -5,7 +5,6 @@
 (include "../theories/Arith.smt3")
 (include "../theories/Strings.smt3")
 
-
 ; This signature is used for both strings and sequences, where we often
 ; write "string" in the documentation to refer to a string or sequence.
 
@@ -33,7 +32,7 @@
 ; Skolems, which are used in reductions. Notice that Skolem terms may use
 ; terms that are not in original form, meaning that the definitions of Skolems
 ; may themselves contain Skolems. This is to avoid the use of a side condition
-; for computing the original form of a term in the LFSC signature, which
+; for computing the original form of a term in the ALF signature, which
 ; naively is exponential.
 
 ; Get the term corresponding to the prefix of term s of fixed length n.
@@ -190,7 +189,7 @@
 )
 
 ; re_unfold_pos_concat t R
-; A helper method for computing the conclusion of PfRule::RE_UNFOLD_POS.
+; A helper method for computing the conclusion of ProofRule::RE_UNFOLD_POS.
 ; For a regular expression (re.++ R1 ... Rn), re_unfold_pos_concat returns a pair of terms
 ; where the first term is a concatentation (str.++ t1 ... tn) and the second
 ; is a conjunction M of literals of the form (str.in_re ti Ri), such that
