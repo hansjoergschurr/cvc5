@@ -18,15 +18,10 @@
 ; specific plugins
 (include "./rules/drat/Drat.smt3")
 
-; TODO: proper place for these
+; extensions
 (declare-const fmf.card (-> Type Int Bool))
 (declare-sort @ho-elim-sort 1)
 (declare-const @fmf-fun-sort (-> (! Type :var T :implicit) T Type))
-
-; skolems
-;INPUT_VARIABLE
-;SHARED_SELECTOR
-;HO_TYPE_MATCH_PRED
 
 ; side condition for normalizing inputs for the purposes of the reference command
 (program parse_normalize ((T Type) (U Type) (S Type) (x T) (y U) (f (-> T S)) (z S))
