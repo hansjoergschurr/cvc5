@@ -259,9 +259,6 @@ void PropEngine::assertTrustedLemmaInternal(TrustNode trn, bool removable)
 void PropEngine::assertInternal(
     TNode node, bool negated, bool removable, bool input, ProofGenerator* pg)
 {
-  Trace("ajr-temp") << "assert " << isProofEnabled() << " "
-                    << options().smt.unsatCoresMode << " " << input
-                    << std::endl;
   bool addAssumption = false;
   if (isProofEnabled())
   {
