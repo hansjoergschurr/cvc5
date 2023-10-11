@@ -135,9 +135,9 @@
       (! Int :var e) (! Int :var s) (BitVec w) (FloatingPoint e s)))
 
 ; Internally generated terms.
-(declare-const EXPONENT (-> (! Type :var T) T))
-(declare-const SIGN (-> (! Type :var T) T))
-(declare-const SIGNIFICAND (-> (! Type :var T) T))
-(declare-const ZERO (-> (! Type :var T) T))
-(declare-const INF (-> (! Type :var T) T))
-(declare-const NAN (-> (! Type :var T) T))
+(declare-const @fp.EXPONENT (-> (! Type :var T) T))
+(declare-const @fp.SIGN (-> (! Type :var T) T))
+(declare-const @fp.SIGNIFICAND (-> (! Type :var T) T))
+(declare-const @fp.ZERO (-> (! Type :var T) T))
+(declare-const @fp.INF (-> (! Type :var T) T))
+(declare-const @fp.NAN (-> (! Type :var T) T))
