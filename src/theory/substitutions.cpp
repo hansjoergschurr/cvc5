@@ -64,8 +64,11 @@ Node SubstitutionMap::internalSubstitute(TNode t,
   vector<substitution_stack_element> toVisit;
   toVisit.push_back((TNode) t);
 
+  size_t count = 0;
   while (!toVisit.empty())
   {
+    count++;
+    Trace("ajr-temp") << "count=" << count << std::endl;
     // The current node we are processing
     substitution_stack_element& stackHead = toVisit.back();
     TNode current = stackHead.d_node;
@@ -83,7 +86,13 @@ Node SubstitutionMap::internalSubstitute(TNode t,
     if (find2 != d_substitutions.end()) {
       Node rhs = (*find2).second;
       Assert(rhs != current);
-      internalSubstitute(rhs, cache, tracker, stc);
+      find = cache.find(rhs);
+      if (find==cache.end())
+      {
+        // visit the RHS
+        toVisit.push_back((TNode) rhs);
+        continue;
+      }
       if (tracker == nullptr)
       {
         d_substitutions[current] = cache[rhs];
@@ -123,7 +132,13 @@ Node SubstitutionMap::internalSubstitute(TNode t,
           if (find2 != d_substitutions.end()) {
             Node rhs = (*find2).second;
             Assert(rhs != result);
-            internalSubstitute(rhs, cache, tracker, stc);
+            find = cache.find(rhs);
+            if (find==cache.end())
+            {
+              // visit the RHS
+              toVisit.push_back((TNode) rhs);
+              continue;
+            }
             d_substitutions[result] = cache[rhs];
             cache[result] = cache[rhs];
             if (tracker != nullptr)
