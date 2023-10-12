@@ -1,6 +1,6 @@
 /******************************************************************************
  * Top contributors (to current version):
- *   Hans-Jörg Schurr
+ *   Andrew Reynolds, Hans-Jörg Schurr
  *
  * This file is part of the cvc5 project.
  *
@@ -563,7 +563,7 @@ void AlfPrinter::printStepPre(AlfPrintChannel* out, const ProofNode* pn)
     if (ar == AlfRule::SCOPE)
     {
       Assert(pn->getArguments().size() == 3);
-      size_t aid = allocatePush(pn);
+      size_t aid = allocateAssumePushId(pn);
       Node a = d_tproc.convert(pn->getArguments()[2]);
       // print a push
       out->printAssume(a, aid, true);
@@ -816,7 +816,7 @@ void AlfPrinter::printStepPost(AlfPrintChannel* out, const ProofNode* pn)
   out->printStep(rname, conclusionPrint, id, premises, args, isPop);
 }
 
-size_t AlfPrinter::allocatePush(const ProofNode* pn)
+size_t AlfPrinter::allocateAssumePushId(const ProofNode* pn)
 {
   std::map<const ProofNode*, size_t>::iterator it = d_ppushMap.find(pn);
   if (it != d_ppushMap.end())
@@ -827,12 +827,8 @@ size_t AlfPrinter::allocatePush(const ProofNode* pn)
   Node a = pn->getArguments()[2];
   bool wasAlloc = false;
   size_t aid = allocateAssumeId(a, wasAlloc);
-  // if we assigned an id to the assumption,
-  if (wasAlloc)
-  {
-    d_activeScopes.insert(pn);
-  }
-  else
+  // if we assigned an id to the assumption
+  if (!wasAlloc)
   {
     // otherwise we shadow, just use a dummy
     d_pfIdCounter++;

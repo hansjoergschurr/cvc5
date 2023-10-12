@@ -10,13 +10,13 @@
  * directory for licensing information.
  * ****************************************************************************
  *
- * The post processor for the experimental Alf format.
+ * The post processor for the AletheLF format.
  */
 
 #include "cvc5_private.h"
 
-#ifndef CVC4__PROOF__ALF_POST_PROCESSOR_H
-#define CVC4__PROOF__ALF_POST_PROCESSOR_H
+#ifndef CVC5__PROOF__ALF_POST_PROCESSOR_H
+#define CVC5__PROOF__ALF_POST_PROCESSOR_H
 
 #include <map>
 #include <unordered_set>
@@ -99,4 +99,4 @@ class AlfProofPostprocess : protected EnvObj
 }  // namespace proof
 }  // namespace cvc5::internal
 
-#endif
+#endif /* CVC5__PROOF__ALF_POST_PROCESSOR_H */
