@@ -46,6 +46,7 @@ class PrintBenchmark
   /**
    * Print the declarations and definitions from a set of definitions and terms.
    *
+<<<<<<< HEAD
    * @param outDecl The output stream to print the declarations on
    * @param outDefs The output stream to print the function definitions on.
    * @param def The definitions to print.
@@ -53,6 +54,16 @@ class PrintBenchmark
    */
   void printDeclarationsFrom(std::ostream& outDecl,
                              std::ostream& outDefs,
+=======
+   * @param outTypes The output stream to print the type declarations on
+   * @param outFuns The output stream to print the function declarations and
+   * definitions on.
+   * @param def The definitions to print.
+   * @param term The terms to print declarations and definitions from.
+   */
+  void printDeclarationsFrom(std::ostream& outTypes,
+                             std::ostream& outFuns,
+>>>>>>> ce64f348d30c56efdd174f965cdcb75e972fb328
                              const std::vector<Node>& defs,
                              const std::vector<Node>& terms);
   /**
