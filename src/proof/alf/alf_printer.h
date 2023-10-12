@@ -1,6 +1,6 @@
 /******************************************************************************
  * Top contributors (to current version):
- *   Hans-Jörg Schurr
+ *   Andrew Reynolds, Hans-Jörg Schurr
  *
  * This file is part of the cvc5 project.
  *
@@ -50,27 +50,56 @@ class AlfPrinter : protected EnvObj
   void print(std::ostream& out, std::shared_ptr<ProofNode> pfn);
 
  private:
-  /** Is handled? */
+  /** Return true if it is possible to trust the topmost application in pfn */
   bool isHandled(const ProofNode* pfn) const;
+  /**
+   * Return true if it is possible to evaluate n using the evaluation side condition in
+   * the ALF signature. Notice this requires that all subterms of n are handled. This
+   * method is used for determining if an application of ProofRule::EVALUATE can be applied.
+   */
   bool canEvaluate(Node n) const;
-  /* Returns the proof name normalized */
+  /* Returns the normalized name of the proof rule of pfn */
   static std::string getRuleName(const ProofNode* pfn);
 
   //-------------
+  /**
+   * Add the arguments of proof node pn to args in the order in which they should be printed.
+   * This also ensures the nodes have been converted via the ALF node converter.
+   */
   void getArgsFromProofRule(const ProofNode* pn, std::vector<Node>& args);
+  /**
+   * Helper for print. Prints the proof node using the print channel out. This may either write
+   * the proof to an output stream or preprocess it.
+   */
   void printProofInternal(AlfPrintChannel* out, const ProofNode* pn);
+  /**
+   * Called at preorder traversal of proof node pn. Prints (if necessary) to out.
+   */
   void printStepPre(AlfPrintChannel* out, const ProofNode* pn);
+  /**
+   * Called at postorder traversal of proof node pn. Prints (if necessary) to out.
+   */
   void printStepPost(AlfPrintChannel* out, const ProofNode* pn);
-  /** Allocate assume id, return true if was newly allocated */
-  size_t allocatePush(const ProofNode* pn);
+  /**
+   * Allocate (if necessary) the identifier for an assume-push step for pn and return the identifier.
+   * pn should be an application of ProofNode::SCOPE.
+   */
+  size_t allocateAssumePushId(const ProofNode* pn);
+  /**
+   * Allocate (if necessary) the identifier for an assume step for the assumption for formula n and return the identifier.
+   * Note this identifier is unique for each assumed formula, although multiple assumption proofs for n may exist.
+   */
   size_t allocateAssumeId(const Node& n, bool& wasAlloc);
+  /**
+   * Allocate (if necessary) the identifier for step
+   */
   size_t allocateProofId(const ProofNode* pn, bool& wasAlloc);
   Node allocatePremise(size_t id);
-  /** Print DSL rule */
+  /** Print DSL rule name r to output stream out */
   void printDslRule(std::ostream& out, rewriter::DslProofRule r);
-  /** Print let list */
+  /** Print let list to output stream out */
   void printLetList(std::ostream& out, LetBinding& lbind);
-  /** The term processor */
+  /** Reference to the term processor */
   AlfNodeConverter& d_tproc;
   /** Assume id counter */
   size_t d_pfIdCounter;
@@ -83,13 +112,13 @@ class AlfPrinter : protected EnvObj
   /** Mapping proof nodes to nodes (non-flatten) */
   std::map<const ProofNode*, Node> d_pnodeMap;
   std::map<size_t, Node> d_passumeNodeMap;
+  /** The (dummy) type used for proof terms */
   TypeNode d_pfType;
-  /** Active scopes */
-  std::unordered_set<const ProofNode*> d_activeScopes;
   /** term prefix */
   std::string d_termLetPrefix;
   /** Flatten */
   bool d_proofFlatten;
+  /** The false node */
   Node d_false;
   /** List node converter */
   AlfListNodeConverter d_ltproc;
