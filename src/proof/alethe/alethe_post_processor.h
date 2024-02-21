@@ -35,7 +35,8 @@ class AletheProofPostprocessCallback : protected EnvObj,
   AletheProofPostprocessCallback(Env& env,
                                  AletheNodeConverter& anc,
                                  bool resPivots,
-                                 std::string* reasonForConversionFailure);
+                                 std::string* reasonForConversionFailure,
+                                 bool forAlf = false);
   ~AletheProofPostprocessCallback() {}
   /** Should proof pn be updated? Only if its top-level proof rule is not an
    *  Alethe proof rule.
@@ -154,6 +155,8 @@ class AletheProofPostprocessCallback : protected EnvObj,
   Node d_false;
 
   std::string* d_reasonForConversionFailure;
+  /** Flag to indicate wether we postprocess steps for the Alf printer. */
+  bool d_forAlf;
 };
 
 /**
@@ -163,7 +166,10 @@ class AletheProofPostprocessCallback : protected EnvObj,
 class AletheProofPostprocess : protected EnvObj
 {
  public:
-  AletheProofPostprocess(Env& env, AletheNodeConverter& anc, bool resPivots);
+  AletheProofPostprocess(Env& env,
+                         AletheNodeConverter& anc,
+                         bool resPivots,
+                         bool forAlf = false);
   ~AletheProofPostprocess();
   /** post-process
    *

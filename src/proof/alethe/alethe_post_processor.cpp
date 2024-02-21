@@ -62,14 +62,19 @@ AletheProofPostprocessCallback::AletheProofPostprocessCallback(
     Env& env,
     AletheNodeConverter& anc,
     bool resPivots,
-    std::string* reasonForConversionFailure)
+    std::string* reasonForConversionFailure,
+    bool forAlf)
     : EnvObj(env),
       d_anc(anc),
       d_resPivots(resPivots),
-      d_reasonForConversionFailure(reasonForConversionFailure)
+      d_reasonForConversionFailure(reasonForConversionFailure),
+      d_forAlf(forAlf)
 {
   NodeManager* nm = NodeManager::currentNM();
-  d_cl = nm->mkBoundVar("cl", nm->sExprType());
+  if (forAlf)
+    d_cl = nm->mkBoundVar("@cl", nm->sExprType());
+  else
+    d_cl = nm->mkBoundVar("cl", nm->sExprType());
   d_true = nm->mkConst(true);
   d_false = nm->mkConst(false);
 }
@@ -556,6 +561,7 @@ bool AletheProofPostprocessCallback::update(Node res,
     {
       std::vector<Node> newArgs;
       std::vector<Node> cargs;
+      Node conclusion;
       if (id == ProofRule::CHAIN_RESOLUTION)
       {
         for (size_t i = 0, nargs = args[0].getNumChildren(); i < nargs; i++)
@@ -581,13 +587,16 @@ bool AletheProofPostprocessCallback::update(Node res,
         return addAletheStepFromOr(
             AletheRule::RESOLUTION_OR, res, children, newArgs, *cdp);
       }
-      return addAletheStep(AletheRule::RESOLUTION_OR,
-                           res,
-                           res == d_false ? nm->mkNode(Kind::SEXPR, d_cl)
-                                          : nm->mkNode(Kind::SEXPR, d_cl, res),
-                           children,
-                           newArgs,
-                           *cdp);
+      if (res == d_false)
+      {
+        conclusion = d_forAlf ? res : nm->mkNode(Kind::SEXPR, d_cl);
+      }
+      else
+      {
+        conclusion = nm->mkNode(Kind::SEXPR, d_cl, res);
+      }
+      return addAletheStep(
+          AletheRule::RESOLUTION_OR, res, conclusion, children, newArgs, *cdp);
     }
     // ======== Factoring
     // See proof_rule.h for documentation on the FACTORING rule. This comment
@@ -832,7 +841,7 @@ bool AletheProofPostprocessCallback::update(Node res,
     {
       return addAletheStep(AletheRule::RESOLUTION,
                            res,
-                           nm->mkNode(Kind::SEXPR, d_cl),
+                           d_forAlf ? d_false : nm->mkNode(Kind::SEXPR, d_cl),
                            children,
                            d_resPivots ? std::vector<Node>{children[0], d_true}
                                        : std::vector<Node>(),
@@ -2465,7 +2474,7 @@ bool AletheProofPostprocessCallback::finalStep(Node res,
   {
     Node notFalse =
         nm->mkNode(Kind::SEXPR, d_cl, d_false.notNode());  // (cl (not false))
-    Node newChild = nm->mkNode(Kind::SEXPR, d_cl);         // (cl)
+    Node newChild = d_forAlf ? d_false : nm->mkNode(Kind::SEXPR, d_cl);  // (cl)
 
     success &= addAletheStep(AletheRule::FALSE, notFalse, notFalse, {}, {}, *cdp);
     success &= addAletheStep(
@@ -2552,8 +2561,10 @@ bool AletheProofPostprocessCallback::addAletheStepFromOr(
 
 AletheProofPostprocess::AletheProofPostprocess(Env& env,
                                                AletheNodeConverter& anc,
-                                               bool resPivots)
-    : EnvObj(env), d_cb(env, anc, resPivots, &d_reasonForConversionFailure)
+                                               bool resPivots,
+                                               bool forAlf)
+    : EnvObj(env),
+      d_cb(env, anc, resPivots, &d_reasonForConversionFailure, forAlf)
 {
 }
 

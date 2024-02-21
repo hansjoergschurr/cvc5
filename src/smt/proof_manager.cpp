@@ -273,7 +273,7 @@ void PfManager::printProof(std::ostream& out,
     std::string reasonForConversionFailure;
     proof::AletheNodeConverter anc;
     proof::AletheProofPostprocess vpfpp(
-        d_env, anc, options().proof.proofAletheResPivots);
+        d_env, anc, options().proof.proofAletheResPivots, true);
     if (vpfpp.process(fp, reasonForConversionFailure))
     {
       // print using ALF printer
