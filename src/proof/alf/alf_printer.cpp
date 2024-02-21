@@ -494,8 +494,10 @@ void AlfPrinter::getArgsFromProofRule(const ProofNode* pn,
     {
       Assert (pargs.size()>=3) << *pn;
       // ignore the first argument, which specifies the rule and the second
-      // argument which stores a conclusion
-      args.insert(args.end(), pargs.begin()+3, pargs.end());
+      // argument which stores a temporary conclusion.
+      // Do not ignore the third argument: this is the conclusion that
+      // all Alethe rules expect.
+      args.insert(args.end(), pargs.begin() + 2, pargs.end());
       return;
     }
     default: break;
